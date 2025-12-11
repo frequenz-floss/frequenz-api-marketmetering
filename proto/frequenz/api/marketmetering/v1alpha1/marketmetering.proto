@@ -1,0 +1,1811 @@
+// Frequenz Market Metering API
+//
+// Copyright:
+// Copyright 2025 Frequenz Energy-as-a-Service GmbH
+//
+// License:
+// MIT
+
+syntax = "proto3";
+
+package frequenz.api.marketmetering.v1alpha1;
+
+import "frequenz/api/common/v1alpha8/pagination/pagination_info.proto";
+import "frequenz/api/common/v1alpha8/pagination/pagination_params.proto";
+import "frequenz/api/common/v1alpha8/types/interval.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// The MarketMeteringService provides a global, market-neutral interface for
+// managing logical Market Locations and retrieving their regulated metering
+// data.
+//
+// The service standardizes metering semantics across countries, grid
+// operators, identifier formats, contractual resolutions, and energy-flow
+// conventions and turns that into a consistent logical time-series model:
+//
+//   • A Market Location represents the contractual point of energy exchange
+//     used for billing, settlement, portfolio optimization, and flexibility
+//     trading—not a physical meter.
+//
+//   • Metering samples are versioned using immutable revisions to provide a
+//     complete, regulator-compliant audit trail.
+//
+//   • Market Location metadata changes (directions, resolution, activation
+//     state) are themselves´revisioned, ensuring deterministic
+//     reconstruction of any historical state.
+//
+//   • The service supports ingestion of new or corrected samples, and provides
+//     high-performance historical + real-time streaming, with optional
+//     resampling for portfolio-scale analytics.
+//
+// The goal of the MarketMeteringService is to give enterprises a consistent,
+// global abstraction over energy-metering data—independent of market area,
+// grid operator, meter hardware, or regulatory structure—while preserving all
+// guarantees required for settlement, compliance, auditability, and trading.
+//
+// !!! note "Market Location"
+//     A Market Location is a logical, contract-level identifier used for
+//     settlement, billing, portfolio management, and grid operator reporting.
+//
+//     Examples include:
+//       • Germany → MaLo-ID
+//       • UK      → MPAN
+//       • Australia → NMI
+//       • US      → ESI-ID
+//
+//     A Market Location is NOT the physical meter. One Market Location may be
+//     backed by multiple physical meters and technical registers.
+//
+// !!! note "Market Location Activation State"
+//     A Market Location may be active or deactivated. Deactivation:
+//
+//       • prevents ingestion of new samples
+//       • does not remove historical data
+//       • does not remove revision history
+//
+// !!! note "Market Area"
+//     A Market Location belongs to exactly one Market Area (e.g., DE, AT, UK).
+//     Market Areas determine regulatory conventions such as the default
+//     metering resolution, calendar conventions, and direction semantics.
+//
+// !!! note "Energy Flow Direction"
+//     Indicates whether the Market Location represents:
+//
+//       • IMPORT  → consumption from the grid
+//       • EXPORT  → injection / feed-in to the grid
+//
+//     Some jurisdictions allow both directions under one identifier.
+//     A Market Location declares which directions it supports.
+//
+// !!! note "Metric Type & Metric Unit"
+//     Metering values are expressed by combining:
+//
+//       • MetricType → what is being measured (ENERGY, POWER, REACTIVE_POWER)
+//       • MetricUnit → the unit (kWh, kW, kVArh, kVAr)
+//
+//     A MarketLocationSeries always represents exactly one (metric_type,
+//     metric_unit) combination.
+//
+// !!! note "Contractual Resolution"
+//     All metering values are stored and interpreted according to the Market
+//     Location’s contractual time resolution (e.g., 15 minutes, 30 minutes,
+//     5 minutes). Historical data remains at the resolution applicable at the
+//     time of ingestion. Changing the contractual resolution creates a new
+//     revision but never rewrites history.
+//
+// !!! note "Sample Revision"
+//     Revisions provide an immutable audit trail for metering metadata and
+//     individual samples. They ensure:
+//
+//       • full traceability of corrections
+//       • regulatory-grade immutability
+//       • deterministic reconstruction of state timelines
+//
+//     Sample revisions increase only when new corrective data is received.
+//     Metadata revisions increase when a Market Location's config changes.
+//
+//     This supports regulatory auditability and lifecycle tracking.
+//
+// !!! note "Resampling"
+//     Streaming requests may optionally specify a resampling resolution to
+//     aggregate or interpolate samples. When resampling is active:
+//
+//       • resampled samples have no regulatory revision
+//       • late-arriving native samples may trigger resampled corrections
+//       • update_time indicates the last materialization of a resampled window
+//
+//     Clients must use update_time to select the latest authoritative value
+//     for resampled intervals.
+//
+// !!! note "Typical Lifecycle & Sequence of Operations"
+//     Applications interacting with the Market Metering Service typically
+//     follow this operational lifecycle:
+//
+//     1. Register a Market Location
+//
+//        An enterprise typically begins by registering its Market Locations,
+//        establishing the contract-level identifiers (such as MaLo-ID, MPAN,
+//        NMI, or ESI-ID) together with their supported energy-flow
+//        directions and contractual time resolution.
+//
+//     2. Adjust or evolve Market Location metadata
+//
+//        Once created, a Market Location may evolve over time as its commercial
+//        or regulatory context changes. Change applied produce a new
+//        metadata revisions whenever attributes such as time resolution,
+//        supported directions, or user-defined metadata are modified.
+//        The revision mechanism ensures that all historical states remain
+//        reconstructable.
+//
+//     3. Activate or deactivate Market Locations
+//
+//        A Market Location can be temporarily or permanently deactivated for
+//        example, during contractual transitions, metering reconfiguration,
+//        or migration to new billing periods. When the location becomes
+//        operational again, its ability to receive new samples can be restored.
+//
+//     4. Ingest metering data (new or corrected)
+
+//        Metering data ingestion is performed using the bidirectional stream
+//        Each message carries a single metering value together with its
+//        metadata, and corrections are applied by submitting a new sample
+//        for the same timestamp and a higher revision. The service never
+//        deletes or overwrites earlier revisions; instead, each correction
+//        creates an immutable audit trail.
+//
+//     5. Retrieve historical and real-time metering data
+//
+//        Depending on the time filter, the service may return a finite
+//        historical dataset, continue seamlessly into real-time mode once
+//        historical samples are exhausted, or stream only real-time
+//        measurements if no start_time is provided. Optional resampling
+//        may be applied to request coarser intervals; in this mode,
+//        late-arriving native samples can trigger corrected resampled
+//        outputs for previously emitted windows.
+//
+//     Together, these operations form a complete lifecycle for managing,
+//     correcting, and streaming billing-grade metering data across global
+//     electricity markets.
+//
+// !!! important "Authentication"
+//     All requests to MarketMeteringService must be signed. The key
+//     identifier and signature must be included in the request metadata
+//     (gRPC metadata / HTTP headers). The signature must be computed using the
+//     HMAC-SHA256 algorithm and secret key. All requests to this service must
+//     be made over TLS (HTTPS).
+//
+service MarketMeteringService {
+  // Create a new Market Location for a given enterprise.
+  rpc CreateMarketLocation(CreateMarketLocationRequest)
+      returns (CreateMarketLocationResponse);
+
+  // Update an existing Market Location.
+  rpc UpdateMarketLocation(UpdateMarketLocationRequest)
+      returns (UpdateMarketLocationResponse);
+
+  // Deactivate a Market Location.
+  rpc DeactivateMarketLocation(DeactivateMarketLocationRequest)
+      returns (DeactivateMarketLocationResponse);
+
+  // Activate a previously deactivated Market Location.
+  rpc ActivateMarketLocation(ActivateMarketLocationRequest)
+      returns (ActivateMarketLocationResponse);
+
+  // List Market Locations and their revisioned metadata.
+  rpc ListMarketLocations(ListMarketLocationsRequest)
+       returns (ListMarketLocationsResponse);
+
+  // Bidirectional stream for inserting or correcting metering samples.
+  rpc UpsertMarketLocationSamplesStream (stream
+      UpsertMarketLocationSamplesStreamRequest)
+      returns (stream UpsertMarketLocationSamplesStreamResponse);
+
+  // Streams historical and real-time metering samples.
+  rpc ReceiveMarketLocationSamplesStream
+      (ReceiveMarketLocationSamplesStreamRequest)
+      returns (stream ReceiveMarketLocationSamplesStreamResponse);
+}
+
+// Defines the jurisdiction in which a Market Location is registered.
+//
+// A Market Area corresponds to the regulatory or market framework governing
+// the Market Location. The specific identifier format (MPAN, MaLo-ID, POD,
+// NMI, ESI-ID, etc.) is defined separately in MarketLocationIdType.
+//
+// !!! note
+//     Market areas represent jurisdictions, not market operators.
+//     For example, the United States has multiple market operators (ERCOT,
+//     CAISO, PJM, ISO-NE), but they all fall under the "US" market area here.
+//
+enum MarketArea {
+  // UNSPECIFIED: Default unspecified value — must not be used.
+  MARKET_AREA_UNSPECIFIED = 0;
+
+  // DE: Germany (Marktlokation / MaLo).
+  MARKET_AREA_DE = 1;
+
+  // UK: United Kingdom (MPAN).
+  MARKET_AREA_UK = 2;
+
+  // IT: Italy (POD).
+  MARKET_AREA_IT = 3;
+
+  // AU: Australia (NMI).
+  MARKET_AREA_AU = 4;
+
+  // US: US - ERCOT region (Esi ID).
+  MARKET_AREA_US_ERCOT = 5;
+
+  // OTHER: Other or not yet modelled areas.
+  MARKET_AREA_OTHER = 99;
+}
+
+// Identifies the type of external market identifier used to reference
+// a Market Location in a specific jurisdiction.
+enum MarketLocationIdType {
+  // UNSPECIFIED: Default unspecified value — must not be used.
+  MARKET_LOCATION_ID_TYPE_UNSPECIFIED = 0;
+
+  // MALO_ID: Germany – Marktlokations-ID (MaLo-ID)
+  MARKET_LOCATION_ID_TYPE_MALO_ID = 1;
+
+  // MPAN: United Kingdom – Meter Point Administration Number
+  MARKET_LOCATION_ID_TYPE_MPAN = 2;
+
+  // ESI_ID: United States – Electric Service Identifier (ESI ID)
+  MARKET_LOCATION_ID_TYPE_ESI_ID = 3;
+
+  // NMI: Australia – National Metering Identifier
+  MARKET_LOCATION_ID_TYPE_NMI = 4;
+
+  // OTHER: Generic meter identifier for markets not modeled explicitly yet.
+  MARKET_LOCATION_ID_TYPE_OTHER = 99;
+}
+
+// Indicates which fields of a Market Location changed in this revision.
+//
+// A revision may reflect one or many changed fields. The enum is intentionally
+// coarse-grained to mirror the update semantics.
+//
+// !!! note
+//     If new updatable fields are added to MarketLocationUpdate in the future,
+//     a corresponding enum value should be added here.
+enum MarketLocationChangedField {
+  // UNSPECIFIED: Should not be used in valid responses.
+  MARKET_LOCATION_CHANGED_FIELD_UNSPECIFIED = 0;
+
+  // SUPPORTED DIRECTIONS: Supported import/export directions changed.
+  MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS = 1;
+
+  // TIME RESOLUTION: Contractual time resolution changed.
+  MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION = 2;
+
+  // IS_ACTIVE: Activation status changed (activate/deactivate).
+  MARKET_LOCATION_CHANGED_FIELD_IS_ACTIVE = 3;
+}
+
+// Classification of structured error conditions that may occur when activating
+// or deactivating a Market Location.
+enum MarketLocationOperationErrorCode {
+  // UNSPECIFIED: Should not be used in valid responses.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_UNSPECIFIED = 0;
+
+  // NOT_FOUND: The Market Location could not be found within the specified
+  // enterprise.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_NOT_FOUND = 1;
+
+  // ALREADY_IN_TARGET_STATE: The caller attempted to activate/deactivate a
+  // Market Location that is already in the desired state.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_ALREADY_IN_TARGET_STATE = 2;
+
+  // ENTERPRISE_MISMATCH: The provided market location id references an
+  // enterprise that does not match the enterprise of the stored Market
+  // Location.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_ENTERPRISE_MISMATCH = 3;
+
+  // PERMISSION_DENIED: The caller is not authorized to mutate this Market
+  // Location.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_PERMISSION_DENIED = 4;
+
+  // OPERATION_REJECTED: A service validation rule or invariant prevented the
+  // operation.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_OPERATION_REJECTED = 5;
+
+  // UNKNOWN_ERROR: Any other unexpected service-side error.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_UNKNOWN_ERROR = 99;
+}
+
+// Defines the time resolution (sampling interval) of metering data.
+//
+// All timestamps refer to the start of the measured interval, and the
+// interval runs until:
+//       [timestamp, timestamp + resolution)
+//
+// Resolutions are modeled explicitly because different markets use
+// different fixed intervals.
+//
+// !!! example "Common resolution examples"
+//     These intervals are commonly encountered in interval metering systems
+//     worldwide:
+//
+//     | Jurisdiction        | Metric Type      | Resolution
+//     |---------------------|------------------|------------
+//     | Germany (MaLo)      | Energy (kWh)     | PT15M
+//     | UK (MPAN)           | Energy (kWh)     | PT30M
+//     | Australia (NEM12)   | Energy (Wh)      | PT5M
+//     | US (ERCOT)          | Power (kW)       | PT5M
+//     | US (PJM/ISO-NE)     | Power/Energy     | PT1H
+//     | Smart meters (AMI)  | Energy           | PT1M
+//
+// !!! note "Primary Resolution"
+//     A Market Location typically has one primary contractual resolution.
+//     Some systems may support additional resolutions (e.g., for telemetry
+//     or submetering).
+//
+enum TimeResolution {
+  // UNSPECIFIED: Must not be used.
+  TIME_RESOLUTION_UNSPECIFIED = 0;
+
+  // PT1M: 1-minute interval.
+  // Used in some modern AMI systems (US, AU) and for high-frequency metering.
+  TIME_RESOLUTION_1_MIN = 1;
+
+  // PT2M: 2-minute interval.
+  // Rare, but supported by some industrial submetering systems.
+  TIME_RESOLUTION_2_MIN = 2;
+
+  // PT5M: 5-minute interval.
+  // Used in Australia (AEMO NEM12), US ISOs (ERCOT), and many AMI systems.
+  TIME_RESOLUTION_5_MIN = 3;
+
+  // PT10M: 10-minute interval.
+  // Seen in some Asian and utility-specific formats.
+  TIME_RESOLUTION_10_MIN = 4;
+
+  // PT15M: 15-minute interval.
+  // Standard for Germany (MSCONS), Switzerland, Italy, Netherlands,
+  // and future Nordic harmonization.
+  TIME_RESOLUTION_15_MIN = 5;
+
+  // PT30M: 30-minute interval.
+  // Historic UK settlement period; still widely used for MPAN half-hourly data.
+  TIME_RESOLUTION_30_MIN = 6;
+
+  // PT60M: 60-minute interval (1 hour).
+  // Nordic ElHub standard; common in US and Canadian utilities.
+  TIME_RESOLUTION_60_MIN = 7;
+
+  // P1D: Daily resolution.
+  // Used for coarse-granularity reporting or legacy billing schemas.
+  TIME_RESOLUTION_1_DAY = 8;
+}
+
+// Describes the direction of energy flow for metering samples.
+//
+// This is used in data queries and ingestion to select the correct "side"
+// of a Market Location. For example, in Germany there are separate
+// Market Locations for import and export. In other markets (e.g. UK, US)
+// a single identifier may be bidirectional.
+//
+enum EnergyFlowDirection {
+  // UNSPECIFIED: Default unspecified value — must not be used.
+  ENERGY_FLOW_DIRECTION_UNSPECIFIED = 0;
+
+  // Energy flowing from grid to customer (consumption).
+  ENERGY_FLOW_DIRECTION_IMPORT = 1;
+
+  // Energy flowing from customer to grid (generation / feed-in).
+  ENERGY_FLOW_DIRECTION_EXPORT = 2;
+}
+
+// Defines the fundamental physical property being measured.
+enum MetricType {
+  // UNSPECIFIED: Default unspecified value — must not be used.
+  METRIC_TYPE_UNSPECIFIED = 0;
+
+  // ACTIVE_ENERGY: Active energy (e.g., kWh, Wh, MWh).
+  METRIC_TYPE_ACTIVE_ENERGY = 1;
+
+  // ACTIVE_POWER: Active power (e.g., kW, MW).
+  METRIC_TYPE_ACTIVE_POWER = 2;
+
+  // REACTIVE_ENERGY: Reactive energy (e.g., kVArh).
+  METRIC_TYPE_REACTIVE_ENERGY = 3;
+
+  // REACTIVE_POWER: Reactive power (e.g., kVAr, MVAr).
+  METRIC_TYPE_REACTIVE_POWER = 4;
+}
+
+// Defines the unit of measurement for a sample value.
+enum MetricUnit {
+  // UNSPECIFIED: Default value — should not appear in valid data.
+  METRIC_UNIT_UNSPECIFIED = 0;
+
+  // Watt-hour (Wh): Small-scale active energy unit. Typically used for
+  // fine-granularity registers or device-level measurement.
+  METRIC_UNIT_WH = 1;
+
+  // Kilowatt-hour (kWh): Standard billing and settlement unit for active
+  // energy in most global markets (DE, UK, AU, US, etc.).
+  METRIC_UNIT_KWH = 2;
+
+  // Megawatt-hour (MWh): Large-scale active energy unit, commonly used in
+  // wholesale markets, trading, and TSO reporting.
+  METRIC_UNIT_MWH = 3;
+
+  // Watt (W): Base SI unit for active power. Often used for device telemetry
+  // or short-duration calculations.
+  METRIC_UNIT_W = 10;
+
+  // Kilowatt (kW): Standard unit for instantaneous or averaged active power in
+  // commercial and industrial metering.
+  METRIC_UNIT_KW = 11;
+
+  // Megawatt (MW): Unit for large-scale power flows used in wholesale trading,
+  // balancing, and TSO/ISO operational systems.
+  METRIC_UNIT_MW = 12;
+
+  // Volt-ampere-reactive-hour (varh): Small-scale reactive energy unit,
+  // rarely used outside technical diagnostics.
+  METRIC_UNIT_VARH = 20;
+
+  // Kilovolt-ampere-reactive-hour (kvarh): Standard settlement unit in
+  // jurisdictions that bill for reactive energy.
+  METRIC_UNIT_KVARH = 21;
+
+  // Megavolt-ampere-reactive-hour (Mvarh): Used in high-voltage or
+  // transmission-level reactive accounting.
+  METRIC_UNIT_MVARH = 22;
+
+  // Volt-ampere-reactive (var): Base unit for instantaneous reactive power.
+  METRIC_UNIT_VAR = 30;
+
+  // Kilovolt-ampere-reactive (kvar): Standard unit for reactive power in
+  // distribution networks and large commercial installations.
+  METRIC_UNIT_KVAR = 31;
+
+  // Megavolt-ampere-reactive (Mvar): Used in transmission-level system
+  // management and reactive capability reporting.
+  METRIC_UNIT_MVAR = 32;
+}
+
+// Classification of data quality for a metering sample.
+//
+// Many regulated markets deliver values that may be measured, estimated,
+// corrected, or intentionally flagged as missing. This enum provides a
+// normalized representation of these states.
+//
+enum DataQuality {
+  // UNSPECIFIED: Default value — should not occur in valid data.
+  DATA_QUALITY_UNSPECIFIED = 0;
+
+  // MEASURED: Raw value directly received from the metering system or DSO.
+  // Represents an original, unmodified reading.
+  DATA_QUALITY_MEASURED = 1;
+
+  // ESTIMATED: Value inferred or interpolated due to missing or invalid
+  // meter readings (e.g., outages, communication gaps, profile-based
+  // estimation). Indicates reduced accuracy compared to a measured value.
+  DATA_QUALITY_ESTIMATED = 2;
+
+  // CORRECTED: Value that was initially delivered but later amended during
+  // validation, reconciliation, or settlement processes (e.g.,
+  // corrections, plausibility adjustments, manual review).
+  DATA_QUALITY_CORRECTED = 3;
+
+  // MISSING: No valid value is available for this interval.
+  DATA_QUALITY_MISSING = 4;
+}
+
+// Strategy for selecting which revisions of a resource should be returned.
+//
+// Many entities in regulated energy systems evolve over time and may exist in
+// multiple historical revisions. Examples include:
+//   • time-series samples that receive corrections or late updates
+//   • Market Location metadata updated by the user or backend processes
+//
+// This enum allows clients to control whether they want only the most recent
+// version of each entity or the full revision history.
+//
+// !!! note "Revision ordering"
+//     Revisions are ordered strictly by their numeric `revision` field.
+//     The service does not infer semantics from market-specific document types
+//     or timestamps — the highest numeric revision always represents the newest
+//     version of a given entity.
+//
+enum RevisionStrategy {
+  // UNSPECIFIED: Should not be used. Defaults to LATEST_ONLY.
+  REVISION_STRATEGY_UNSPECIFIED = 0;
+
+  // LATEST_ONLY: Return only the newest revision of each entity.
+  //
+  // !!! note
+  //     The newest revision is determined solely by the highest numeric
+  //     `revision` value.
+  REVISION_STRATEGY_LATEST_ONLY = 1;
+
+  // ALL: Return every available revision of each entity.
+  //
+  // !!! note
+  //     Consumers must handle multiple entries representing the same logical
+  //     entity or timestamp, differentiated only by revision number.
+  REVISION_STRATEGY_ALL = 2;
+}
+
+// Indicates how a returned sample was derived relative to the originally
+// stored metering resolution.
+enum ResamplingMethod {
+  // UNSPECIFIED: Default — should not appear in valid API responses.
+  RESAMPLING_METHOD_UNSPECIFIED = 0;
+
+  // NATIVE: The sample is stored at this exact resolution in the backend.
+  RESAMPLING_METHOD_NATIVE = 1;
+
+  // DOWNSAMPLED: The sample is computed from finer-granularity data.
+  // Example: native = 1 min; requested = 15 min.
+  RESAMPLING_METHOD_DOWNSAMPLED = 2;
+
+  // UPSAMPLED: The sample is computed from coarser-granularity data.
+  // Example: native = 15 min; requested = 5 min.
+  //
+  // !!! important
+  //     Upsampling cannot create new information. Values are typically
+  //     distributed (for energy) or repeated/interpolated (for power).
+  RESAMPLING_METHOD_UPSAMPLED = 3;
+}
+
+// Defines how multiple native samples are combined when downsampling
+// to a coarser resolution.
+enum DownsamplingMethod {
+  // UNSPECIFIED: Defaults to MEAN.
+  DOWNSAMPLING_METHOD_UNSPECIFIED = 0;
+
+  // MEAN: Arithmetic mean of all samples within the interval.
+  DOWNSAMPLING_METHOD_MEAN = 1;
+}
+
+// Error classification for market location sample ingestion.
+enum SampleUpsertErrorCode {
+  // UNSPECIFIED: Default — should not appear in valid API responses.
+  SAMPLE_UPSERT_ERROR_CODE_UNSPECIFIED = 0;
+
+  // REVISION_CONFLICT: Same revision exists, but the payload differs.
+  SAMPLE_UPSERT_ERROR_CODE_REVISION_CONFLICT = 1;
+
+  // REVISION_TOO_OLD: Revision is older than stored; cannot overwrite.
+  SAMPLE_UPSERT_ERROR_CODE_REVISION_TOO_OLD = 2;
+
+  // UNSUPPORTED_DIRECTION: Direction not supported by this Market Location.
+  SAMPLE_UPSERT_ERROR_CODE_UNSUPPORTED_DIRECTION = 3;
+
+  // UNSUPPORTED_METRIC_TYPE: Metric type not supported.
+  SAMPLE_UPSERT_ERROR_CODE_UNSUPPORTED_METRIC_TYPE = 4;
+
+  // UNIT_MISMATCH: Metric unit inconsistent with metric type.
+  SAMPLE_UPSERT_ERROR_CODE_UNIT_MISMATCH = 5;
+
+  // LOCATION_NOT_FOUND: The Market Location does not exist.
+  SAMPLE_UPSERT_ERROR_CODE_MARKET_LOCATION_NOT_FOUND = 6;
+
+  // LOCATION_INACTIVE: The Market Location exists but is inactive.
+  SAMPLE_UPSERT_ERROR_CODE_MARKET_LOCATION_INACTIVE = 7;
+
+  // INVALID_TIMESTAMP: Sample time outside allowed retention or validity.
+  SAMPLE_UPSERT_ERROR_CODE_INVALID_TIMESTAMP = 8;
+
+  // STORAGE_FAILURE: Internal backend error during storage.
+  SAMPLE_UPSERT_ERROR_CODE_STORAGE_FAILURE = 9;
+
+  // Any other unexpected service-side error.
+  SAMPLE_UPSERT_ERROR_CODE_UNKNOWN_ERROR = 99;
+}
+
+// Resampling options for Market Location time-series data.
+//
+// Resampling allows clients to request a time resolution that differs from
+// the Market Location’s native stored resolution. The service constructs a
+// uniform output grid based on the requested resolution and produces exactly
+// one sample per interval.
+//
+// Two semantic modes may result:
+//
+//   • Downsampling (when the requested resolution is coarser)
+//       Multiple native samples fall into one output interval; these are
+//       combined using the selected aggregation method.
+//
+//   • Upsampling (when the requested resolution is finer)
+//       Each native sample expands into multiple sub-intervals. ENERGY is
+//       allocated proportionally, while POWER is repeated stepwise.
+//
+// In both cases the output sample timestamp equals the start of the interval
+// in the materialized grid.
+//
+// !!! example "Example: Downsampling from 1-minute to 15-minute intervals"
+//     The stored time series has a native resolution of Δt = 1 minute.
+//     Resampling is requested with a resolution of ΔT = 15 minutes. In
+//     this case all native samples whose timestamps fall within an interval
+//     [t, t + Δt) contribute to the aggregated value for that interval. The
+//     timestamp of the aggregated sample is exactly t, the start of the
+//     interval.
+//
+//     For each interval k:
+//         Ik = [T0 + k·ΔT,  T0 + (k+1)·ΔT)
+//
+//     The aggregated value A_k is the arithmetic mean of all samples whose
+//     timestamps ts satisfy: ts ∈ Ik
+//
+//     The resampled series consists of points:
+//         (t = T0 + k·ΔT,  value = A_k)
+//
+// !!! example "Upsampling: 15-minute → 5-minute"
+//     If the native resolution is Δt = 15 min and the requested resolution is
+//     ΔT = 5 min, each native interval expands into three equally sized
+//     sub-intervals, with ENERGY proportionally allocated and POWER repeated.
+//
+message ResamplingOptions {
+  // Optional resampling resolution for the output time series.
+  TimeResolution resolution = 1;
+
+  // Optional aggregation method applied when downsampling. Defaults to
+  // DOWNSAMPLING_METHOD_MEAN when omitted.
+  DownsamplingMethod downsampling_method = 2;
+}
+
+// Market-standard identifier describing a Market Location.
+//
+// A Market Location is a jurisdiction-specific point of metering used for
+// regulatory processes such as settlement, billing, supplier switching,
+// balancing-group reconciliation, and DSO/TSO reporting. Different markets
+// use incompatible identifier formats—varying in length, character sets,
+// checksum rules, and decomposition.
+//
+// This message encapsulates the official, market-issued identifier used to
+// reference such a point. Examples:
+//   • Germany:  MaLo-ID (Marktlokations-ID)
+//   • UK:       MPAN (Meter Point Administration Number)
+//   • US:       ESI-ID (Electric Service Identifier)
+//   • Australia NMI (National Metering Identifier)
+//
+// !!! example "Example values for different markets"
+//     The following examples illustrate how the fields may be populated for
+//     different jurisdictions:
+//
+//     | Market:Type     | Official ID         | Normalized Value
+//     | --------------- | ------------------- | -----------------------------
+//     | DE:MALO_ID      | "12345678901"       | "12345678901"
+//     | UK:MPAN         | "18 1066 1234 567 8901 234" | "18106612345678901234"
+//     | US_ERCOT:ESI_ID | "10443720000012345" | "10443720000012345"
+//     | AU:NMI          | "NEM1203456A"       | "NEM1203456A"
+//
+//     In each case, `value` preserves the original format as provided by the
+//     market operator, while `normalized_value` is an implementation-specific
+//     cleaned representation suitable for validation, indexing, and
+//     comparisons.
+//
+message MarketLocationId {
+  // Opaque identifier in its original market format as received from the
+  // source system (MSCONS, DataHub, CSV, manual entry, etc.).
+  //
+  // Examples:
+  //   - "DE01234567890" (Germany MaLo)
+  //   - "18 1066 1234 567 8901 234" (UK MPAN with spaces)
+  //   - "NEM12-03456-A" (AU NMI with hyphens)
+  string value = 1;
+
+  // Identifies what type of official market identifier `value` represents.
+  MarketLocationIdType type = 2;
+}
+
+// Identifies a Market Location within a specific enterprise.
+// This tuple is globally unique across all tenants.
+message MarketLocationRef {
+  // Unique enterprise id for this Market Location.
+  uint64 enterprise_id = 1;
+
+  // Market-wide identifier (MaLo, MPAN, ESI-ID, NMI, …).
+  MarketLocationId market_location_id = 2;
+}
+
+// Represents a logical Market Location used in regulated electricity markets.
+//
+// A Market Location is a contract-level metering point identifier defined by
+// the local jurisdiction (e.g., MaLo in Germany, MPAN in the UK, ESI-ID in the
+// US, NMI in Australia). It abstracts from physical meters or channels and is
+// the anchor for billing, settlement, reconciliation, forecasting, and
+// portfolio aggregation.
+//
+// !!! example "Example Market Location Object"
+//     ```json
+//     {
+//       "display_name": "Main Office – Consumption",
+//       "market_area": "MARKET_AREA_DE",
+//       "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
+//       "time_resolution": "TIME_RESOLUTION_15_MIN",
+//       "payload": {
+//         "cost_center": "CC-1103",
+//         "site_group": "HQ-North",
+//         "notes": "Primary billing meter"
+//       }
+//     }
+//     ```
+//
+message MarketLocation {
+  // Optional human-readable name for organizational use.
+  string display_name = 1;
+
+  // Jurisdiction in which this Market Location is registered.
+  MarketArea market_area = 2;
+
+  // Supported energy-flow directions for this Market Location.
+  //
+  // Indicates which energy-flow directions this Market Location is permitted
+  // to represent according to regulatory or contractual rules.
+  //
+  // !!! note "What supported_directions means"
+  //     This field reflects the contractual capability of the Market
+  //     Location to represent import (consumption), export (generation),
+  //     or both. It does not describe physical wiring or real-time flow,
+  //     but the officially registered role in the market.
+  //
+  // !!! examples "Market Location Examples"
+  //     • Germany (DE)
+  //       - Consumption MaLo → [IMPORT]
+  //       - Feed-in MaLo     → [EXPORT]
+  //
+  //     • UK (MPAN)
+  //       - A single MPAN may support both directions → [IMPORT, EXPORT]
+  //
+  repeated EnergyFlowDirection supported_directions = 3;
+
+  // Primary contractual time resolution for this Market Location.
+  //
+  // This describes the default metering interval (e.g., PT15M, PT30M, PT5M).
+  // It reflects the settlement granularity expected by the jurisdiction.
+  //
+  // !!! note
+  //     Some markets provide multiple resolutions. This is metadata
+  //     describing the primary resolution (e.g., PT15M).
+  TimeResolution time_resolution = 4;
+
+  // Optional user-defined metadata.
+  //
+  // Clients may store arbitrary structured data (e.g., cost centers, internal
+  // references, grouping labels, billing metadata).
+  google.protobuf.Struct payload = 5;
+}
+
+// Detailed representation of a Market Location, including metadata necessary
+// for revision management, activation state, and lifecycle tracking.
+//
+// `MarketLocationDetail` wraps the immutable identity fields and semantic
+// attributes contained in `MarketLocation` with operational metadata.
+//
+// !!! example "Example MarketLocationDetail Object"
+//     ```json
+//     {
+//       "market_location_ref": {
+//         "enterprise_id": 42,
+//         "market_location_id": {
+//           "value": "DE01234567890",
+//           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//         },
+//       "market_location": {
+//         "display_name": "Main Office – Consumption",
+//         "market_area": "MARKET_AREA_DE",
+//         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
+//         "time_resolution": "TIME_RESOLUTION_15_MIN",
+//       },
+//       "revision": 3,
+//       "is_active": true,
+//       "create_time": "2025-01-01T00:00:00Z",
+//       "update_time": "2025-01-20T12:34:56Z"
+//     }
+//     ```
+//
+message MarketLocationDetail {
+  // Official market identifier for this Market Location
+  MarketLocationRef market_location_ref = 1;
+
+  // The logical Market Location (identity, jurisdiction, directions,
+  // resolution, etc.).
+  MarketLocation market_location = 2;
+
+  // Monotonically increasing revision counter.
+  //
+  // !!! note
+  //     Each metadata change (e.g., supported_directions, market area,
+  //     resolution, activation status) increments this counter.
+  //     ListMarketLocations returns only the latest revision by default.
+  uint64 revision = 3;
+
+  // Whether the Market Location is currently active.
+  //
+  // !!! note "Meaning of Activation Status"
+  //     This flag indicates whether the Market Location is operationally
+  //     active:
+  //
+  //       • active = true
+  //           - New samples MAY be ingested.
+  //           - The location participates in billing, reconciliation,
+  //             portfolio aggregation, and trading workflows.
+  //
+  //       • active = false
+  //           - No new samples may be ingested.
+  //           - The location is excluded from operational workflows by
+  //             default, but:
+  //               ▪ historical samples remain fully accessible,
+  //               ▪ historical revisions remain queryable,
+  //               ▪ reactivation is possible without data loss.
+  //
+  //     Deactivation represents an administrative state, NOT deletion. It
+  //     preserves regulatory auditability and long-term metering integrity.
+  bool is_active = 4;
+
+  // Timestamp when this Market Location record was first created.
+  google.protobuf.Timestamp create_time = 5;
+
+  // Timestamp of the most recent metadata change.
+  google.protobuf.Timestamp update_time = 6;
+
+  // Timestamp of the most recent deactivation event.
+  //
+  // !!! note
+  //     Unset when the Market Location has never been deactivated.
+  google.protobuf.Timestamp last_deactivated_time = 7;
+}
+
+// Filters for selecting market locations.
+//
+// A Market Location must match all specified criteria to be included in the
+// result.
+//
+// !!! note "Filter Semantics"
+//     • Each repeated field (e.g., market_location_id_filters) is evaluated
+//       using logical OR.
+//     • Different filter fields (if more are added in the future) will be
+//       combined using logical AND.
+//     • If no filters are provided, all Market Locations of the enterprise
+//       are returned.
+//
+message MarketLocationsFilter {
+  // Optional filter to match one or more Market Locations by their official ID.
+  //
+  // Matching is performed using logical OR:
+  //     If any listed identifier matches, the Market Location is included.
+  repeated MarketLocationId market_location_id_filters = 1;
+
+  // Optional: include deactivated Market Locations in the result.
+  //
+  // !!! note "Default Behavior"
+  //     • By default (false), only active Market Locations are returned.
+  //     • When true, both active and inactive Market Locations are included.
+  //
+  bool include_inactive = 2;
+}
+
+// Configuration for selecting which revisions of a Market Location
+// should be returned in a list operation.
+//
+// Combines the revision strategy (latest vs. all) with an optional filter
+// limiting which historical revisions qualify for inclusion.
+message MarketLocationRevisionSelection {
+  // Controls whether only the latest revision or all revisions are returned.
+  //
+  // Default: REVISION_STRATEGY_LATEST_ONLY
+  RevisionStrategy revision_strategy = 1;
+
+  // Optional filtering of historical revisions by which fields changed.
+  //
+  // Example:
+  //     changed_fields = ["time_resolution", "supported_directions"]
+  //
+  //     Returned revisions:
+  //         • rev 1 → always returned (baseline)
+  //         • rev 2 → returned only if any listed field changed vs rev 1
+  //         • rev 3 → returned only if any listed field changed vs rev 2
+  //
+  // !!! important
+  //     • Applied only when revision_strategy = REVISION_STRATEGY_ALL
+  //     • Ignored otherwise.
+  repeated MarketLocationChangedField changed_fields = 2;
+}
+
+// Represents a native metering sample submitted via upsert.
+message MarketLocationSample {
+  // Timestamp of the native reading (UTC).
+  //
+  // Interpretation depends on the metric type:
+  //   • ENERGY: start of the interval.
+  //   • POWER: reference timestamp (instantaneous or averaged).
+  google.protobuf.Timestamp sample_time = 1;
+
+  // Numeric value measured by the upstream meter.
+  //
+  // !!! note "Value for missing samples"
+  //     When `quality = DATA_QUALITY_MISSING`, the value SHOULD be unset.
+  optional double value = 2;
+
+  // Quality classification of the native reading.
+  DataQuality quality = 3;
+
+  // Revision number used to correct previously ingested samples.
+  //
+  // Monotonically increasing revision number for the exact tuple:
+  //   (market_location, direction, metric_type, sample_time)
+  //
+  // Larger numbers represent newer revisions. A new revision replaces the
+  // previous one only for the same key tuple.
+  uint64 revision = 4;
+}
+
+// Represents a metering sample with additional metadata.
+//
+// This message represents two sample types:
+//   1. Native samples — ingested at the meter’s original resolution.
+//   2. Service-computed samples produced during resampling and/or aggregation.
+//
+message MarketLocationSampleDetail {
+  // Timestamp associated with the sample.
+  google.protobuf.Timestamp sample_time = 1;
+
+  // The numeric value, if available.
+  //
+  // !!! note "Missing value"
+  //     This may be unset in the case the native reading was missing when
+  //     quality = MISSING or if no native samples were present for the
+  //     resampling window.
+  optional double value = 2;
+
+  // Quality classification of the sample.
+  //
+  // For native samples this reflects the meter-provided quality. For resampled
+  // values this reflects the semantic quality of the aggregate.
+  DataQuality quality = 3;
+
+  // Revision number for native samples.
+  //
+  // !!! note "Missing revision"
+  //     For resampled values, this field is unset in case
+  //     resampling combined multiple samples with different
+  //     revisions.
+  optional uint64 revision = 4;
+
+  // Timestamp when the sample was last updated.
+  //
+  // !!! note "Timestamp interpretation"
+  //     For native samples this represents the ingestion timestamp while for
+  //     resampled values this indicates when the service computed the
+  //     resampled interval window.
+  google.protobuf.Timestamp sample_update_time = 5;
+
+  // How this sample was produced: native, downsampled, upsampled.
+  ResamplingMethod resampling_method = 6;
+}
+
+// Represents a semantic time series for a single logical Market Location.
+message MarketLocationSeries {
+  // The enterprise and Market Location to which this sample belongs.
+  MarketLocationRef market_location_ref = 1;
+
+  // Energy-flow direction of this series (IMPORT or EXPORT).
+  // Derived from the request and validated against supported_directions.
+  EnergyFlowDirection direction = 2;
+
+  // Metric type represented by this series (e.g., ENERGY, POWER).
+  MetricType metric_type = 3;
+
+  // The physical unit in which the metric is expressed (e.g., kWh, kW, kVArh).
+  MetricUnit metric_unit = 4;
+
+  // Market Location's current contractual resolution.
+  TimeResolution resolution = 5;
+
+  // Ordered samples representing this semantic time series.
+  repeated MarketLocationSampleDetail samples = 6;
+}
+
+// Filters metering samples by a UTC time interval.
+//
+// A metering sample represents a measured value for a fixed-resolution interval
+// (e.g., 15 minutes). This filter restricts the returned samples to those whose
+// interval start timestamps fall within an optional time window.
+//
+// The time window is inclusive at the start and exclusive at the end:
+//     start_time ≤ sample_timestamp < end_time>
+//
+// !!! note "Filter Logic"
+//     - `interval` is optional; if omitted, all timestamps are matched.
+//     - Only sample timestamps within the interval are included.
+//     - Interval semantics follow ISO 8601 conventions and match those used by
+//       other Frequenz services.
+//
+// !!! example "Example: All samples on or after a timestamp"
+//     ```json
+//     {
+//       "interval": {
+//         "start_time": "2025-06-01T00:00:00Z"
+//       }
+//     }
+//     ```
+//
+// !!! example "Example: Samples in a closed-open time window"
+//     ```json
+//     {
+//       "interval": {
+//         "start_time": "2025-06-01T00:00:00Z",
+//         "end_time":   "2025-06-02T00:00:00Z"
+//       }
+//     }
+//     ```
+//
+message MarketLocationTimeFilter {
+  // Optional; Time window for matching sample interval start timestamps.
+  //
+  // If omitted, samples from all timestamps are included.
+  frequenz.api.common.v1alpha8.types.Interval interval = 1;
+}
+
+// Result of a Market Location lifecycle operation (activate, deactivate, etc.).
+message MarketLocationOperationResult {
+  // Market Location on which the operation was performed.
+  MarketLocationRef market_location_ref = 1;
+
+  // Whether the operation succeeded.
+  bool success = 2;
+
+  // Timestamp of the operation when success = true.
+  google.protobuf.Timestamp update_time = 3;
+
+  // Machine-readable error classification.
+  MarketLocationOperationErrorCode error_code = 4;
+
+  // Human-readable error explanation or backend diagnostic message.
+  string error_message = 5;
+}
+
+// General filter criteria for querying samples uniformly apply to all Market
+// Locations, directions, and metric types in this request.
+message MarketLocationSamplesStreamFilter {
+  // Optional resampling options like resolution for the data, represented in
+  // seconds. If omitted, samples are returned at their original stored,
+  // native resolution.
+  //
+  // !!! note "Missing native samples"
+  //     If a resampling interval contains no native samples, the service
+  //     emits a sample with its value unset.
+  ResamplingOptions resampling_options = 3;
+
+  // Optional revision-selection strategy applied when multiple revisions
+  // exist for the same timestamp. If unspecified defaults to the latest
+  // revision. For samples, the highest numeric `revision` value represents
+  // the newest version.
+  //
+  // Example:
+  //     timestamp = 2025-01-01T00:00Z
+  //     revisions:
+  //       • rev 1 (MEASURED)
+  //       • rev 2 (CORRECTED)
+  //       • rev 3 (CORRECTED)
+  //
+  //   - LATEST_ONLY → selects only rev 3
+  //   - ALL         → selects rev 1, rev 2, rev 3
+  //
+  // !!! important "Effect on Resampling"
+  //     When resampling is enabled, revision_strategy only determines which
+  //     native revisions contribute to the aggregate, but the output always
+  //     contains exactly one sample per interval. Late-arriving native
+  //     samples may trigger corrected resampled values for past intervals.
+  RevisionStrategy revision_strategy = 1;
+
+  // Optional Time-filter defining the historical window and real-time
+  // behaviour of the stream.
+  //
+  // Semantics:
+  //   • If `end_time` is provided, it MUST be ≤ the current server time. The
+  //     server streams all samples t where start_time ≤ t < end_time and
+  //     then closes the stream.
+  //
+  //   • If `end_time` is omitted, the server streams all historical samples
+  //     t ≥ start_time (if provided) and then continues streaming new samples
+  //     in real time. The stream remains open indefinitely.
+  //
+  //   • If `start_time` is omitted:
+  //         – and `end_time` is omitted: the stream produces no historical
+  //           data and begins streaming real-time samples only.
+  //         – and `end_time` is provided: the historical window is empty and
+  //           the stream closes immediately.
+  MarketLocationTimeFilter time_filter = 2;
+}
+
+// Creates a new Market Location within an Enterprise.
+//
+// A Market Location represents a contract-level metering point identifier used
+// in regulated electricity markets (e.g., MaLo in DE, MPAN in UK, ESI-ID in US,
+// NMI in AU). This RPC registers such a Market Location with the platform.
+//
+// !!! example "Example Request"
+//     ```json
+//     {
+//       "market_location_ref": {
+//         "enterprise_id": 42,
+//         "market_location_id": {
+//           "value": "DE01234567890",
+//           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//         }
+//       },
+//       "market_location": {
+//         "display_name": "Main Office – Consumption",
+//         "market_area": "MARKET_AREA_DE",
+//         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
+//         "time_resolution": "TIME_RESOLUTION_15_MIN",
+//         "payload": {
+//           "siteCode": "HQ-North",
+//           "comment": "Primary billing meter"
+//         }
+//       }
+//     }
+//     ```
+//
+message CreateMarketLocationRequest {
+  // Identifies the target enterprise and the Market Location ID to create.
+  MarketLocationRef market_location_ref = 1;
+
+  // Metadata describing the Market Location.
+  //
+  // All fields except `payload` must be populated. The service performs
+  // validation and assigns revision numbers upon creation.
+  MarketLocation market_location = 2;
+}
+
+// Response for creating a new Market Location.
+//
+// Returns the fully populated MarketLocationDetail, including revision
+// information and activation status.
+//
+// !!! example "Example Response"
+//     ```json
+//     {
+//       "enterprise_id": 42,
+//       "market_location": {
+//         "market_location": {
+//           "enterprise_id": 42,
+//           "market_location_id": {
+//             "value": "DE01234567890",
+//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           },
+//           "display_name": "Main Office – Consumption",
+//           "market_area": "MARKET_AREA_DE",
+//           "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
+//           "time_resolution": "TIME_RESOLUTION_15_MIN",
+//           "payload": {
+//             "siteCode": "HQ-North"
+//           }
+//         },
+//         "revision": 1,
+//         "is_active": true,
+//         "create_time": "2025-01-01T10:00:00Z",
+//         "update_time": "2025-01-01T10:00:00Z"
+//       }
+//     }
+//     ```
+//
+message CreateMarketLocationResponse {
+  // Enterprise to which this Market Location belongs.
+  uint64 enterprise_id = 1;
+
+  // Fully populated MarketLocationDetail after creation.
+  MarketLocationDetail market_location = 2;
+}
+
+// Updates metadata of an existing Market Location.
+//
+// Only a restricted subset of Market Location metadata may be updated.
+// These rules preserve regulatory auditability and prevent retroactive
+// changes that would conflict with historical billing, settlement, or
+// reconciliation processes.
+//
+// Updates always produce a new metadata revision. Historical revisions
+// remain retrievable when using revision_strategy = REVISION_STRATEGY_ALL.
+message UpdateMarketLocationRequest {
+  // Container for all mutable Market Location fields.
+  //
+  // !!! important "Metadata Updates"
+  //     The following fields are mutable:
+  //
+  //       • display_name
+  //       • payload
+  //
+  //     The following fields are conditionally mutable:
+  //
+  //       • supported_directions
+  //           - Append-only: new directions may be added.
+  //             Example: [IMPORT] → [IMPORT, EXPORT]
+  //           - Removing directions is NOT allowed because historical samples
+  //             may exist for those directions.
+  //
+  //       • time_resolution
+  //           - May be updated only to a finer resolution (e.g., PT60M →
+  //             PT15M).
+  //           - Resolution changes apply only to future samples; historical
+  //             samples retain their original resolution.
+  //
+  //     The following fields are immutable and MUST NOT appear in
+  //     update_mask:
+  //
+  //       • enterprise_id
+  //       • market_location_id
+  //       • market_area
+  //
+  message MarketLocationUpdate {
+    // Optional human-readable name for organizational or UI use.
+    string display_name = 1;
+
+    // Supported energy-flow directions.
+    //
+    // !!! note "Allowed Modifications"
+    //     • Directions may be added (IMPORT → IMPORT+EXPORT)
+    //     • Directions may NOT be removed.
+    repeated EnergyFlowDirection supported_directions = 2;
+
+    // Primary contractual time resolution (e.g., PT15M, PT30M).
+    //
+    // !!! note "Allowed Modifications"
+    //     • May only change to a finer resolution.
+    //     • Example: PT60M → PT15M is allowed; PT15M → PT60M is not.
+    TimeResolution time_resolution = 3;
+
+    // Optional user-defined structured metadata.
+    google.protobuf.Struct payload = 4;
+  }
+
+  // Identifies the Market Location being updated.
+  MarketLocationRef market_location_ref = 1;
+
+  // Field mask specifying which fields inside update_fields should be applied.
+  //
+  // Allowed field mask paths:
+  //     "display_name"
+  //     "supported_directions"
+  //     "time_resolution"
+  //     "payload"
+  //
+  // Attempts to reference immutable fields result in INVALID_ARGUMENT.
+  google.protobuf.FieldMask update_mask = 2;
+
+  // Values to apply to the fields listed in update_mask.
+  MarketLocationUpdate update_fields = 3;
+}
+
+// Response returned after updating a Market Location.
+//
+// The response always contains the latest revision of the Market Location
+// after the update has been applied. Historical revisions remain retrievable
+// using revision-aware listing operations.
+//
+// !!! note "Revision Behavior"
+//     Every successful update creates a new metadata revision.
+//     Revision numbers increase monotonically and allow clients to:
+//
+//       • detect configuration drift,
+//       • reconcile state across microservices,
+//       • audit changes over time.
+//
+// !!! example "Example Response"
+//     ```json
+//     {
+//       "enterprise_id": 42,
+//       "market_location_detail": {
+//         "market_location": {
+//           "enterprise_id": 42,
+//           "market_location_id": {
+//             "value": "DE01234567890",
+//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           },
+//           "display_name": "Main Office – Updated",
+//           "market_area": "MARKET_AREA_DE",
+//           "supported_directions": [
+//             "ENERGY_FLOW_DIRECTION_IMPORT",
+//             "ENERGY_FLOW_DIRECTION_EXPORT"
+//           ],
+//           "time_resolution": "TIME_RESOLUTION_15_MIN",
+//           "payload": {
+//             "site_type": "retail",
+//             "owner": "ACME Energy"
+//           }
+//         },
+//         "revision": 4,
+//         "is_active": true,
+//         "create_time": "2024-12-01T10:00:00Z",
+//         "update_time": "2025-01-15T08:30:00Z"
+//       }
+//     }
+//     ```
+//
+message UpdateMarketLocationResponse {
+  // Enterprise that owns the Market Location.
+  uint64 enterprise_id = 1;
+
+  // Updated Market Location metadata, including:
+  //   • new revision number,
+  //   • updated fields,
+  //   • activation status,
+  //   • timestamps.
+  MarketLocationDetail market_location_detail = 2;
+}
+
+// Request to deactivate one or more Market Locations.
+//
+// Deactivation marks each Market Location as inactive for future operations,
+// without deleting historical metadata or time-series samples. This aligns
+// with regulatory expectations: Market Locations must remain auditable even
+// when they are no longer active.
+//
+// A deactivated Market Location:
+//   • cannot receive new samples,
+//   • is omitted from default listing operations (unless explicitly requested),
+//   • retains all historical revisions for audit, reporting, and compliance.
+//
+// The operation is idempotent: requesting deactivation for an already inactive
+// Market Location does not produce an error.
+//
+message DeactivateMarketLocationRequest {
+  // List of Market Locations to deactivate.
+  repeated MarketLocationRef market_location_refs = 1;
+}
+
+// Response for batch deactivation of Market Locations.
+//
+// Each entry in `results` corresponds to a market location from the
+// request and reports whether the operation succeeded, failed, or was skipped
+// (e.g., already inactive).
+//
+// The RPC never deletes historical data; it only changes activation state.
+//
+message DeactivateMarketLocationResponse {
+  // Deactivation results, one per market location from the request.
+  repeated MarketLocationOperationResult results = 1;
+}
+
+// Request to activate one or more Market Locations.
+//
+// Activation marks the Market Location as active again for normal operations,
+// allowing new sample ingestion and inclusion in default listings.
+// Historical samples, revisions, and metadata remain unchanged. Activating
+// is idempotent: activating an already-active Market Location
+// results in an error.
+//
+message ActivateMarketLocationRequest {
+  // List of Market Locations to activate.
+  repeated MarketLocationRef market_location_refs = 1;
+}
+
+// Response for batch activation of Market Locations.
+//
+// A Result entry is returned per MarketLocationRef, regardless of whether
+// the operation succeeded or failed. Structured error codes allow clients to
+// implement automated handling and retries.
+//
+message ActivateMarketLocationResponse {
+  // Activation results, one per market location from the request.
+  repeated MarketLocationOperationResult results = 1;
+}
+
+// Lists Market Locations belonging to an Enterprise, with optional filters.
+//
+// !!! note "Pagination"
+//     Pagination is supported via `pagination_params`. The server may return
+//     fewer results than requested. Use the returned `pagination_info` to
+//     continue paging, or stop when `next_page_token` is empty.
+//
+// !!! example "Example Request: Filter by two Market Location IDs"
+//     ```json
+//     {
+//       "enterprise_id": 42,
+//       "filter": {
+//         "market_location_id_filters": [
+//           {
+//             "value": "DE01234567890",
+//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           },
+//           {
+//             "value": "DE09876543210",
+//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           }
+//         ],
+//         "include_inactive": false
+//       },
+//       "revision_selection": {
+//         "strategy": "REVISION_STRATEGY_ALL",
+//         "field_filter": {
+//           "changed_fields": [
+//             "MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS",
+//             "MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION"
+//           ]
+//         }
+//       },
+//       "pagination_params": {
+//         "page_size": 100
+//       }
+//     }
+//     ```
+//
+message ListMarketLocationsRequest {
+  // The enterprise for which Market Locations are listed.
+  uint64 enterprise_id = 1;
+
+  // Optional filtering criteria for narrowing the result set.
+  MarketLocationsFilter filter = 2;
+
+  // Optional revision-selection filter controlling if latest, all or selected
+  // revisions are returned.
+  //
+  // Additionally historical revisions can be filtered by changed
+  // fields. If omitted the service ony returns the latest revision.
+  MarketLocationRevisionSelection revision_selection = 3;
+
+  // Pagination parameters.
+  frequenz.api.common.v1alpha8.pagination.PaginationParams
+      pagination_params = 4;
+}
+
+// Response message for listing Market Locations.
+//
+// Each entry is returned as a `MarketLocationDetail`, which includes both the
+// logical Market Location (identity) and revision metadata.
+//
+// !!! example "Market Location List"
+//     ```json
+//     {
+//       "market_locations": [
+//         {
+//           "enterprise_id": 42,
+//           "market_location": {
+//             "market_location": {
+//               "enterprise_id": 42,
+//               "market_location_id": {
+//                 "value": "DE01234567890",
+//                 "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//               },
+//               "market_location_name": "Main Office – Consumption",
+//               "market_area": "MARKET_AREA_DE",
+//               "supported_directions": [
+//                 "ENERGY_FLOW_DIRECTION_IMPORT"
+//               ],
+//               "time_resolution": "TIME_RESOLUTION_15_MIN",
+//               "payload": {
+//                 "building_type": "office",
+//                 "cost_center": "A-17"
+//               }
+//             },
+//             "revision": 3,
+//             "is_active": true,
+//             "create_time": "2025-01-01T00:00:00Z",
+//             "update_time": "2025-01-15T12:34:56Z"
+//           }
+//         }
+//       ],
+//       "pagination_info": {
+//         "next_page_token": ""
+//       }
+//     }
+//     ```
+//
+message ListMarketLocationsResponse {
+  // A single entry in a Market Location listing response.
+  message MarketLocationEntry {
+    // Enterprise to which this Market Location belongs.
+    uint64 enterprise_id = 1;
+
+    // Market Location details for this entry.
+    MarketLocationDetail market_location = 2;
+  }
+
+  // The list of Market Locations belonging to the requesting client.
+  repeated MarketLocationEntry market_locations = 1;
+
+  // Pagination metadata including next_page_token.
+  frequenz.api.common.v1alpha8.pagination.PaginationInfo pagination_info = 2;
+}
+
+// A single ingestion event for one Market Location sample.
+//
+// Each request message processes exactly one sample and produces one
+// acknowledgement response.
+//
+// The server performs strict validation of:
+//   • timestamp alignment with the Market Location's contractual resolution,
+//   • energy-flow direction against supported_directions,
+//   • metric_type against supported metrics,
+//   • metric_unit consistency with metric_type,
+//   • revision monotonicity for the (ML, direction, metric, timestamp) tuple.
+//
+// !!! important "Correction via revisioning (no deletion)"
+//     The MarketMeteringService never deletes samples. Regulated metering
+//     processes require a full historical audit trail.
+//
+//     A previously ingested sample is corrected by submitting a new revision
+//     with the same sample_time but a higher revision value.
+//
+//     Typical patterns:
+//       • Invalidate a value → send a new revision with
+//         `quality = DATA_QUALITY_MISSING` and value = 0.
+//       • Correct a value    → send a new revision with the corrected value
+//         and `quality = DATA_QUALITY_CORRECTED`.
+//
+//     The backend selects the highest revision when serving data, while older
+//     revisions remain queryable via revision strategies.
+//
+// !!! warning "Timestamp alignment is mandatory"
+//     sample.sample_time MUST align with the Market Location's contractual
+//     time_resolution.
+//
+//     Example:
+//       time_resolution = PT15M → allowed times are:
+//         00:00, 00:15, 00:30, 00:45, ...
+//
+//     Misaligned timestamps are rejected.
+//
+// !!! warning "Metric-unit consistency is validated"
+//     The provided metric_unit MUST be compatible with metric_type.
+//         ENERGY → {Wh, kWh, MWh}
+//         POWER  → {W, kW, MW}
+//         REACTIVE_ENERGY → {VArh, kVArh, MVArh}
+//         REACTIVE_POWER  → {VAr, kVAr, MVAr}
+//
+//     The backend does not perform unit conversion.
+//
+// !!! warning "Direction and metric must be allowed"
+//     direction MUST be present in the Market Location's supported_directions.
+//     metric_type MUST be supported for ingestion by the service.
+//
+message UpsertMarketLocationSamplesStreamRequest {
+  // Identifies the target Market Location.
+  MarketLocationRef market_location_ref = 1;
+
+  // Energy-flow direction (IMPORT or EXPORT).
+  //
+  // MUST match one of the Market Location's supported_directions, or the
+  // request is rejected.
+  EnergyFlowDirection direction = 2;
+
+  // The metric type being ingested (e.g., ENERGY, POWER).
+  //
+  // MUST be supported for the Market Location and consistent with metric_unit.
+  MetricType metric_type = 3;
+
+  // The physical unit of the value (e.g., kWh, kW).
+  //
+  // MUST be coherent with metric_type; no implicit unit conversion occurs.
+  MetricUnit metric_unit = 4;
+
+  // Sample data, including sample_time, value, quality, and revision.
+  //
+  // sample.sample_time MUST:
+  //   • be in UTC,
+  //   • align with the Market Location time_resolution,
+  //   • not violate configured ingestion rules (e.g., whether future timestamps
+  //     are allowed).
+  MarketLocationSample sample = 5;
+}
+
+// Acknowledgement for a single upsert operation.
+//
+// Each upsert produces exactly one response.  This response ALWAYS echoes
+// the attempted sample, independent of whether the insert/update succeeded.
+//
+message UpsertMarketLocationSamplesStreamResponse {
+  // The Market Location to which this sample belongs (echoed from request).
+  MarketLocationRef market_location_ref = 1;
+
+  // Echo of the client-submitted sample.
+  //
+  // !!! note
+  //     This field is populated even when ingestion fails. It represents
+  //     the attempted input—not the stored record. On success, its content
+  //     will match the stored sample except for server-generated metadata.
+  MarketLocationSample sample = 2;
+
+  // Timestamp (UTC) when the sample was successfully ingested.
+  //
+  // !!! note
+  //     • Populated only when success = true.
+  //     • This timestamp is assigned by the service and may differ from
+  //       client clock time.
+  google.protobuf.Timestamp ingest_time = 3;
+
+  // Whether the upsert operation succeeded.
+  bool success = 4;
+
+  // Optional machine-readable classification of a failure.
+  //
+  // !!! note
+  //     Populated only when success = false.
+  SampleUpsertErrorCode error_code = 5;
+
+  // Optional human-readable error message.
+  string error_message = 6;
+}
+
+// Request for streaming time-series samples for one or more logical Market
+// Locations.
+//
+// !!! note "Sample Series Expansion Logic"
+//     The server creates one independent time series for every unique
+//     combination of:
+//         • MarketLocationRef
+//         • EnergyFlowDirection
+//         • MetricType
+//
+//     Example:
+//         2 Market Locations × 1 Direction × 2 Metrics = 4 series
+//
+//     Each of these is emitted as a separate MarketLocationSeries in the
+//     streamed response.
+//
+// !!! example "Example Request"
+//     The following example requests ENERGY samples for two Market Locations,
+//     both in IMPORT direction, over a 24-hour window:
+//
+//     ```json
+//     {
+//       "market_location_refs": [
+//         {
+//           "enterprise_id": 42,
+//           "market_location_id": {
+//             "value": "DE01234567890",
+//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           }
+//         },
+//         {
+//           "enterprise_id": 44,
+//           "market_location_id": {
+//             "value": "18 1066 1234 567 8901 234",
+//             "type": "MARKET_LOCATION_ID_TYPE_MPAN"
+//           }
+//         }
+//       ],
+//       "directions": [
+//         "ENERGY_FLOW_DIRECTION_IMPORT"
+//       ],
+//       "metric_types": [
+//         "METRIC_TYPE_ACTIVE_ENERGY"
+//       ],
+//       "stream_filter": {
+//         "revision_strategy": "REVISION_STRATEGY_LATEST_ONLY",
+//         "time_filter": {
+//           "interval": {
+//             "start_time": "2025-01-01T00:00:00Z",
+//             "end_time":   "2025-01-02T00:00:00Z"
+//           }
+//         },
+//         "resampling_options": {
+//           "resolution": "TIME_RESOLUTION_15_MIN"
+//         }
+//       }
+//     }
+//     ```
+//
+message ReceiveMarketLocationSamplesStreamRequest {
+  // A list of Market Location.
+  repeated MarketLocationRef market_location_refs = 1;
+
+  // Energy-flow directions requested (e.g., IMPORT and/or EXPORT).
+  //
+  // Clients may specify one or multiple directions. If multiple directions
+  // are provided, the server expands them into separate time series.
+  repeated EnergyFlowDirection directions = 2;
+
+  // Requested metric types (e.g., ENERGY, POWER).
+  //
+  // At least one metric type must be provided. The server produces one series
+  // per (market_location × direction × metric_type) tuple.
+  repeated MetricType metric_types = 3;
+
+  // // Global stream-level filter applied to all returned series.
+  MarketLocationSamplesStreamFilter stream_filter = 4;
+}
+
+// Streaming response containing one or more time series fragments.
+//
+// The service emits a distinct MarketLocationSeries message for every unique
+// tuple of Market Location, EnergyFlowDirection and MetricType.
+//
+// The RPC is a finite server-side stream: once all samples matching the
+// request (across all Market Locations, directions, and metric types) have
+// been delivered, the server closes the stream. However, if the request’s
+// time_filter specifies no `end_time`, the stream continues in real time.
+//
+// Consumers should treat each market location series in each streamed
+// message as an independent, self-contained segment. Responses may be chunked.
+//
+// !!! note "Incremental / Chunked Streaming"
+//     The service may emit:
+//       • complete series in a single message, or
+//       • multiple incremental/chunked segments.
+//
+// !!! note "Sample Ordering & Updates"
+//     There is no guaranteed ordering between different series, between
+//     chunks of different series, or across series. A client MUST treat every
+//     received MarketLocationSeries as an independent, self-contained
+//     segment and merge or sort samples locally if ordering is required.
+//
+//     The service may also emit more than one sample with identical
+//     `sample_time`. This is normal and reflects the correction workflows
+//     required in regulated metering and real-time resampling.
+//
+//     A sample may be re-emitted whenever the service obtains better or newer
+//     information for that timestamp—whether through revised native readings,
+//     delayed arrivals, or updated resampling intervals.
+//
+//     Clients MUST deduplicate samples for the same `sample_time` by:
+//
+//       1. Prefer the sample with the highest revision, when revisions
+//          are present, otherwise
+//       2. Prefer the sample with the latest update_time.
+//
+//     This rule applies uniformly to both native and resampled streams.
+//
+// !!! example "Example Response Fragment"
+//     Below is an example fragment of a streamed response for a request that
+//     queried IMPORT active energy values for a single Market Location over a
+//     24-hour period (no downsampling or upsampling applied).
+//
+//     ```json
+//     {
+//       "time_filter": {
+//         "interval": {
+//           "start_time": "2025-01-01T00:00:00Z",
+//           "end_time":   "2025-01-02T00:00:00Z"
+//         }
+//       },
+//       "revision_strategy": "REVISION_STRATEGY_LATEST_ONLY",
+//       "resampling_options": {
+//         "resolution": "TIME_RESOLUTION_15_MIN",
+//         "downsampling_method": "DOWNSAMPLING_METHOD_MEAN"
+//       },
+//       "series": [
+//         {
+//           "market_location_ref": {
+//             "enterprise_id": 42,
+//             "market_location_id": {
+//               "value": "DE01234567890",
+//               "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//             }
+//           },
+//           "direction": "ENERGY_FLOW_DIRECTION_IMPORT",
+//           "metric_type": "METRIC_TYPE_ACTIVE_ENERGY",
+//           "metric_unit": "METRIC_UNIT_KWH",
+//           "resolution": "TIME_RESOLUTION_15_MIN",
+//           "samples": [
+//             {
+//               "sample_time": "2025-01-01T00:00:00Z",
+//               "value": 1.234,
+//               "quality": "DATA_QUALITY_MEASURED",
+//               "revision": 1,
+//               "sample_update_time": "2025-01-01T00:00:02Z",
+//               "resampling_method": "RESAMPLING_METHOD_NATIVE"
+//             },
+//             {
+//               "sample_time": "2025-01-01T00:15:00Z",
+//               "value": 0.987,
+//               "quality": "DATA_QUALITY_MEASURED",
+//               "revision": 1,
+//               "sample_update_time": "2025-01-01T00:15:02Z",
+//               "resampling_method": "RESAMPLING_METHOD_NATIVE"
+//             }
+//           ]
+//         }
+//       ]
+//     }
+//     ```
+//
+message ReceiveMarketLocationSamplesStreamResponse {
+  // Echoes the request's stream filter for client convenience.
+  MarketLocationSamplesStreamFilter stream_filter = 1;
+
+  // List of market location metering time series included in this fragment.
+  repeated MarketLocationSeries series = 2;
+}
+
