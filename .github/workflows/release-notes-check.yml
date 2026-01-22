@@ -17,11 +17,14 @@ jobs:
   check-release-notes:
     name: Check release notes are updated
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     steps:
       - name: Check for a release notes update
         if: github.event_name == 'pull_request'
         uses: brettcannon/check-for-changed-files@871d7b8b5917a4f6f06662e2262e8ffc51dff6d1 # v1.2.1
         with:
+          token: ${{ secrets.github_token }}
           file-pattern: "RELEASE_NOTES.md"
           prereq-pattern: "{proto,py}/**"
           skip-label: "cmd:skip-release-notes"
