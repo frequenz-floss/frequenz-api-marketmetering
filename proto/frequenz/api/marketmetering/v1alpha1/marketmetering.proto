@@ -33,7 +33,7 @@ import "google/protobuf/timestamp.proto";
 //     complete, regulator-compliant audit trail.
 //
 //   • Market Location metadata changes (directions, resolution, activation
-//     state) are themselves´revisioned, ensuring deterministic
+//     state) are themselves revisioned, ensuring deterministic
 //     reconstruction of any historical state.
 //
 //   • The service supports ingestion of new or corrected samples, and provides
@@ -133,7 +133,7 @@ import "google/protobuf/timestamp.proto";
 //     2. Adjust or evolve Market Location metadata
 //
 //        Once created, a Market Location may evolve over time as its commercial
-//        or regulatory context changes. Change applied produce a new
+//        or regulatory context changes. Change applied produce new
 //        metadata revisions whenever attributes such as time resolution,
 //        supported directions, or user-defined metadata are modified.
 //        The revision mechanism ensures that all historical states remain
@@ -210,55 +210,155 @@ service MarketMeteringService {
 
 // Defines the jurisdiction in which a Market Location is registered.
 //
-// A Market Area corresponds to the regulatory or market framework governing
-// the Market Location. The specific identifier format (MPAN, MaLo-ID, POD,
-// NMI, ESI-ID, etc.) is defined separately in MarketLocationIdType.
+// A Market Area represents the regulatory jurisdiction and market regime that
+// governs identifier formats, settlement periods, and metering conventions
+// for a Market Location.
 //
-// !!! note
-//     Market areas represent jurisdictions, not market operators.
-//     For example, the United States has multiple market operators (ERCOT,
-//     CAISO, PJM, ISO-NE), but they all fall under the "US" market area here.
+// Identifier formats (MaLo-ID, MPAN, POD, NMI, ESI-ID, …) are modeled
+// separately in MarketLocationIdType.
+//
+// !!! note "Jurisdictions, not operators"
+//     Market areas represent regulatory regimes, not individual exchanges or
+//     TSOs. Where operator-specific behavior matters (e.g. ERCOT vs PJM),
+//     dedicated sub-areas are defined.
+//
+// !!! note "Numeric ranges"
+//     Enum values are grouped by region to preserve ordering, readability,
+//     and backwards-compatible extension.
 //
 enum MarketArea {
   // UNSPECIFIED: Default unspecified value — must not be used.
   MARKET_AREA_UNSPECIFIED = 0;
 
-  // DE: Germany (Marktlokation / MaLo).
-  MARKET_AREA_DE = 1;
+  // ---------------------------------------------------------------------------
+  // Europe [100..199]
+  // ---------------------------------------------------------------------------
 
-  // UK: United Kingdom (MPAN).
-  MARKET_AREA_UK = 2;
+  // EU_DE: Germany — MaLo-ID regime (Marktlokation / MaLo-ID).
+  MARKET_AREA_EU_DE = 101;
 
-  // IT: Italy (POD).
-  MARKET_AREA_IT = 3;
+  // EU_UK: United Kingdom — MPAN regime (Meter Point Administration Number).
+  MARKET_AREA_EU_UK = 102;
 
-  // AU: Australia (NMI).
-  MARKET_AREA_AU = 4;
+  // EU_FR: France — PDL/PRM regime (Point de Livraison/Référence Mesure).
+  MARKET_AREA_EU_FR = 103;
 
-  // US: US - ERCOT region (Esi ID).
-  MARKET_AREA_US_ERCOT = 5;
+  // EU_IT: Italy — POD regime (Point of Delivery).
+  MARKET_AREA_EU_IT = 104;
+
+  // EU_ES: Spain — CUPS regime (Código Universal de Punto de Suministro).
+  MARKET_AREA_EU_ES = 105;
+
+  // EU_NL: Netherlands — EAN regime (European Article Number).
+  MARKET_AREA_EU_NL = 106;
+
+  // EU_BE: Belgium — EAN regime.
+  MARKET_AREA_EU_BE = 107;
+
+  // EU_CH: Switzerland — EAN regime.
+  MARKET_AREA_EU_CH = 108;
+
+  // EU_AT: Austria — Zählpunktnummer (EAN-based).
+  MARKET_AREA_EU_AT = 109;
+
+  // EU_NORDICS: Nordic region — Elhub / GSRN regime (NO, SE, DK, FI).
+  MARKET_AREA_EU_NORDICS = 110;
+
+  // ---------------------------------------------------------------------------
+  // Asia Pacific [200..299]
+  // ---------------------------------------------------------------------------
+
+  // AP_JP: Japan — country-specific metering / settlement regime.
+  MARKET_AREA_AP_JP = 201;
+
+  // AP_CN: China — country-specific metering / settlement regime.
+  MARKET_AREA_AP_CN = 202;
+
+  // AP_IN: India — country-specific metering / settlement regime.
+  MARKET_AREA_AP_IN = 203;
+
+  // AP_SG: Singapore — country-specific metering / settlement regime.
+  MARKET_AREA_AP_SG = 204;
+
+  // ---------------------------------------------------------------------------
+  // North America [300..399]
+  // ---------------------------------------------------------------------------
+
+  // NA_US_ERCOT: United States — ERCOT regime (ESI-ID).
+  MARKET_AREA_NA_US_ERCOT = 301;
+
+  // NA_US_PJM: United States — PJM regime (ESI-ID).
+  MARKET_AREA_NA_US_PJM = 302;
+
+  // NA_US_ISONE: United States — ISO New England regime (ESI-ID).
+  MARKET_AREA_NA_US_ISONE = 303;
+
+  // NA_US_CAISO: United States — CAISO regime (ESI-ID).
+  MARKET_AREA_NA_US_CAISO = 304;
+
+  // ---------------------------------------------------------------------------
+  // Eurasia [400..499]
+  // ---------------------------------------------------------------------------
+
+  // EURASIA_RU: Russia — country-specific metering / settlement regime.
+  MARKET_AREA_EURASIA_RU = 401;
+
+  // ---------------------------------------------------------------------------
+  // Oceania [500..599]
+  // ---------------------------------------------------------------------------
+
+  // OC_AU: Australia — NMI regime (National Metering Identifier).
+  MARKET_AREA_OC_AU = 501;
+
+  // OC_NZ: New Zealand — ICP regime (Installation Control Point).
+  MARKET_AREA_OC_NZ = 502;
+
+  // ---------------------------------------------------------------------------
+  // Other / not yet modelled [900..999]
+  // ---------------------------------------------------------------------------
 
   // OTHER: Other or not yet modelled areas.
-  MARKET_AREA_OTHER = 99;
+  MARKET_AREA_OTHER = 999;
 }
 
 // Identifies the type of external market identifier used to reference
-// a Market Location in a specific jurisdiction.
+// a Market Location in a specific regulatory regime.
+//
+// The identifier type defines the format, validation rules, and semantics
+// of the identifier value. Jurisdictional applicability is modeled separately
+// via MarketArea.
+//
+// !!! note "Identifier regimes, not countries"
+//     Some identifier types (e.g. EAN, ESI_ID) are used across multiple
+//     jurisdictions. This enum models identifier formats, not geography.
+//
 enum MarketLocationIdType {
   // UNSPECIFIED: Default unspecified value — must not be used.
   MARKET_LOCATION_ID_TYPE_UNSPECIFIED = 0;
 
-  // MALO_ID: Germany – Marktlokations-ID (MaLo-ID)
+  // MALO_ID: Germany – Marktlokations-ID (MaLo-ID).
   MARKET_LOCATION_ID_TYPE_MALO_ID = 1;
 
-  // MPAN: United Kingdom – Meter Point Administration Number
+  // MPAN: United Kingdom – Meter Point Administration Number.
   MARKET_LOCATION_ID_TYPE_MPAN = 2;
 
-  // ESI_ID: United States – Electric Service Identifier (ESI ID)
-  MARKET_LOCATION_ID_TYPE_ESI_ID = 3;
+  // POD: Italy — Point of Delivery.
+  MARKET_LOCATION_ID_TYPE_POD = 3;
 
-  // NMI: Australia – National Metering Identifier
-  MARKET_LOCATION_ID_TYPE_NMI = 4;
+  // CUPS: Spain — Código Universal de Punto de Suministro.
+  MARKET_LOCATION_ID_TYPE_CUPS = 4;
+
+  // EAN: Continental Europe (e.g. FR, NL, BE, ...) — European Article Number.
+  MARKET_LOCATION_ID_TYPE_EAN = 5;
+
+  // ESI_ID: United States – Electric Service Identifier.
+  MARKET_LOCATION_ID_TYPE_ESI_ID = 6;
+
+  // NMI: Australia – National Metering Identifier.
+  MARKET_LOCATION_ID_TYPE_NMI = 7;
+
+  // ICP: New Zealand — Installation Control Point.
+  MARKET_LOCATION_ID_TYPE_ICP = 8;
 
   // OTHER: Generic meter identifier for markets not modeled explicitly yet.
   MARKET_LOCATION_ID_TYPE_OTHER = 99;
@@ -447,26 +547,26 @@ enum MetricUnit {
   // balancing, and TSO/ISO operational systems.
   METRIC_UNIT_MW = 12;
 
-  // Volt-ampere-reactive-hour (varh): Small-scale reactive energy unit,
+  // Volt-ampere-reactive-hour (VArh): Small-scale reactive energy unit,
   // rarely used outside technical diagnostics.
   METRIC_UNIT_VARH = 20;
 
-  // Kilovolt-ampere-reactive-hour (kvarh): Standard settlement unit in
+  // Kilovolt-ampere-reactive-hour (kVArh): Standard settlement unit in
   // jurisdictions that bill for reactive energy.
   METRIC_UNIT_KVARH = 21;
 
-  // Megavolt-ampere-reactive-hour (Mvarh): Used in high-voltage or
+  // Megavolt-ampere-reactive-hour (MVArh): Used in high-voltage or
   // transmission-level reactive accounting.
   METRIC_UNIT_MVARH = 22;
 
-  // Volt-ampere-reactive (var): Base unit for instantaneous reactive power.
+  // Volt-ampere-reactive (VAr): Base unit for instantaneous reactive power.
   METRIC_UNIT_VAR = 30;
 
-  // Kilovolt-ampere-reactive (kvar): Standard unit for reactive power in
+  // Kilovolt-ampere-reactive (kVAr): Standard unit for reactive power in
   // distribution networks and large commercial installations.
   METRIC_UNIT_KVAR = 31;
 
-  // Megavolt-ampere-reactive (Mvar): Used in transmission-level system
+  // Megavolt-ampere-reactive (MVAr): Used in transmission-level system
   // management and reactive capability reporting.
   METRIC_UNIT_MVAR = 32;
 }
@@ -600,6 +700,27 @@ enum SampleUpsertErrorCode {
 
   // Any other unexpected service-side error.
   SAMPLE_UPSERT_ERROR_CODE_UNKNOWN_ERROR = 99;
+}
+
+// Activation-state filter for Market Locations.
+//
+// !!! note "Safe default"
+//     If unspecified, the service returns only active Market Locations.
+//
+// This avoids accidentally including inactive Market Locations in workflows
+// such as trading, billing, or operational automation.
+enum ActivationFilter {
+  // UNSPECIFIED: Defaults to ONLY_ACTIVE.
+  ACTIVATION_FILTER_UNSPECIFIED = 0;
+
+  // ONLY_ACTIVE: Return only active Market Locations.
+  ACTIVATION_FILTER_ONLY_ACTIVE = 1;
+
+  // ONLY_INACTIVE: Return only inactive Market Locations.
+  ACTIVATION_FILTER_ONLY_INACTIVE = 2;
+
+  // ALL: Return both active and inactive Market Locations.
+  ACTIVATION_FILTER_ALL = 3;
 }
 
 // Resampling options for Market Location time-series data.
@@ -876,13 +997,11 @@ message MarketLocationsFilter {
   //     If any listed identifier matches, the Market Location is included.
   repeated MarketLocationId market_location_id_filters = 1;
 
-  // Optional: include deactivated Market Locations in the result.
+  // Optional filter for which activation states to include.
   //
   // !!! note "Default Behavior"
-  //     • By default (false), only active Market Locations are returned.
-  //     • When true, both active and inactive Market Locations are included.
-  //
-  bool include_inactive = 2;
+  //     By default, only active Market Locations are returned.
+  ActivationFilter activation_filter = 2;
 }
 
 // Configuration for selecting which revisions of a Market Location
@@ -1006,7 +1125,7 @@ message MarketLocationSeries {
   repeated MarketLocationSampleDetail samples = 6;
 }
 
-// Filters metering samples by a UTC time interval.
+// Filters records by a UTC time interval.
 //
 // A metering sample represents a measured value for a fixed-resolution interval
 // (e.g., 15 minutes). This filter restricts the returned samples to those whose
@@ -1040,7 +1159,7 @@ message MarketLocationSeries {
 //     }
 //     ```
 //
-message MarketLocationTimeFilter {
+message TimeFilter {
   // Optional; Time window for matching sample interval start timestamps.
   //
   // If omitted, samples from all timestamps are included.
@@ -1075,7 +1194,7 @@ message MarketLocationSamplesStreamFilter {
   // !!! note "Missing native samples"
   //     If a resampling interval contains no native samples, the service
   //     emits a sample with its value unset.
-  ResamplingOptions resampling_options = 3;
+  ResamplingOptions resampling_options = 1;
 
   // Optional revision-selection strategy applied when multiple revisions
   // exist for the same timestamp. If unspecified defaults to the latest
@@ -1097,7 +1216,7 @@ message MarketLocationSamplesStreamFilter {
   //     native revisions contribute to the aggregate, but the output always
   //     contains exactly one sample per interval. Late-arriving native
   //     samples may trigger corrected resampled values for past intervals.
-  RevisionStrategy revision_strategy = 1;
+  RevisionStrategy revision_strategy = 2;
 
   // Optional Time-filter defining the historical window and real-time
   // behaviour of the stream.
@@ -1116,7 +1235,7 @@ message MarketLocationSamplesStreamFilter {
   //           data and begins streaming real-time samples only.
   //         – and `end_time` is provided: the historical window is empty and
   //           the stream closes immediately.
-  MarketLocationTimeFilter time_filter = 2;
+  TimeFilter time_filter = 3;
 }
 
 // Creates a new Market Location within an Enterprise.
@@ -1169,12 +1288,14 @@ message CreateMarketLocationRequest {
 //     {
 //       "enterprise_id": 42,
 //       "market_location": {
-//         "market_location": {
+//         "market_location_ref": {
 //           "enterprise_id": 42,
 //           "market_location_id": {
 //             "value": "DE01234567890",
 //             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
-//           },
+//           }
+//         },
+//         "market_location": {
 //           "display_name": "Main Office – Consumption",
 //           "market_area": "MARKET_AREA_DE",
 //           "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
@@ -1263,6 +1384,15 @@ message UpdateMarketLocationRequest {
   // Identifies the Market Location being updated.
   MarketLocationRef market_location_ref = 1;
 
+  // The revision the caller expects to be the latest revision at the time this
+  // update is applied.
+  //
+  // This field prevents lost updates when multiple callers update the same
+  // Market Location concurrently. Callers should first read the latest
+  // MarketLocationDetail, then pass its `revision` here. On mismatch, the
+  // service returns with an error indicating the current latest revision.
+  uint64 expected_revision = 2;
+
   // Field mask specifying which fields inside update_fields should be applied.
   //
   // Allowed field mask paths:
@@ -1272,10 +1402,10 @@ message UpdateMarketLocationRequest {
   //     "payload"
   //
   // Attempts to reference immutable fields result in INVALID_ARGUMENT.
-  google.protobuf.FieldMask update_mask = 2;
+  google.protobuf.FieldMask update_mask = 3;
 
   // Values to apply to the fields listed in update_mask.
-  MarketLocationUpdate update_fields = 3;
+  MarketLocationUpdate update_fields = 4;
 }
 
 // Response returned after updating a Market Location.
@@ -1372,9 +1502,10 @@ message DeactivateMarketLocationResponse {
 //
 // Activation marks the Market Location as active again for normal operations,
 // allowing new sample ingestion and inclusion in default listings.
-// Historical samples, revisions, and metadata remain unchanged. Activating
-// is idempotent: activating an already-active Market Location
-// results in an error.
+// Historical samples, revisions, and metadata remain unchanged.
+//
+// The operation is idempotent: requesting activation for an already active
+// Market Location does not produce an error.
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
@@ -1414,16 +1545,14 @@ message ActivateMarketLocationResponse {
 //             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
 //           }
 //         ],
-//         "include_inactive": false
+//         "activation_filter": "ACTIVATION_FILTER_ONLY_ACTIVE"
 //       },
 //       "revision_selection": {
-//         "strategy": "REVISION_STRATEGY_ALL",
-//         "field_filter": {
-//           "changed_fields": [
-//             "MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS",
-//             "MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION"
-//           ]
-//         }
+//         "revision_strategy": "REVISION_STRATEGY_ALL",
+//         "changed_fields": [
+//           "MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS",
+//           "MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION"
+//         ]
 //       },
 //       "pagination_params": {
 //         "page_size": 100
@@ -1442,7 +1571,7 @@ message ListMarketLocationsRequest {
   // revisions are returned.
   //
   // Additionally historical revisions can be filtered by changed
-  // fields. If omitted the service ony returns the latest revision.
+  // fields. If omitted the service only returns the latest revision.
   MarketLocationRevisionSelection revision_selection = 3;
 
   // Pagination parameters.
@@ -1462,13 +1591,15 @@ message ListMarketLocationsRequest {
 //         {
 //           "enterprise_id": 42,
 //           "market_location": {
-//             "market_location": {
+//             "market_location_ref": {
 //               "enterprise_id": 42,
 //               "market_location_id": {
 //                 "value": "DE01234567890",
 //                 "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
-//               },
-//               "market_location_name": "Main Office – Consumption",
+//               }
+//             },
+//             "market_location": {
+//               "display_name": "Main Office - Consumption",
 //               "market_area": "MARKET_AREA_DE",
 //               "supported_directions": [
 //                 "ENERGY_FLOW_DIRECTION_IMPORT"
