@@ -2,7 +2,7 @@
 
 ## Summary
 
-This release extends the `MarketLocationIdType` and `MarketArea` enum.
+This release extends the `MarketLocationIdType` and `MarketArea` enum, and improves the `MarketLocationOperationResult`.
 
 ## Upgrading
 
@@ -13,7 +13,7 @@ This release extends the `MarketLocationIdType` and `MarketArea` enum.
 
 ## New Features
 
-<!-- Here goes the main new features and examples or instructions on how to use them -->
+- **Market Location Lifecycle**: `Activate` and `Deactivate` operations now return the new `revision` number in `MarketLocationOperationResult`.
 
 ## Bug Fixes
 
