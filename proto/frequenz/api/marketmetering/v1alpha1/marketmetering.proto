@@ -1182,6 +1182,10 @@ message MarketLocationOperationResult {
 
   // Human-readable error explanation or backend diagnostic message.
   string error_message = 5;
+
+  // The new revision of the Market Location after the operation.
+  // Populated when success = true.
+  uint64 revision = 6;
 }
 
 // General filter criteria for querying samples uniformly apply to all Market
