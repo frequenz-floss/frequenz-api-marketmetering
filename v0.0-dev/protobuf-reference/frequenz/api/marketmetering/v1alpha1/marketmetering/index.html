@@ -2963,15 +2963,18 @@ reference such a point. Examples:
   • UK:       MPAN (Meter Point Administration Number)
   • US:       ESI-ID (Electric Service Identifier)
   • Australia NMI (National Metering Identifier)</p>
+<p>Different markets use incompatible identifier formats—varying in length,
+character sets, checksum rules, and presentation formatting (spaces,
+hyphens, prefixes).</p>
 <p>!!! example &#34;Example values for different markets&#34;
     The following examples illustrate how the fields may be populated for
     different jurisdictions:</p>
 <div class="language-text highlight"><pre><span></span><code>| Market:Type     | Official ID         | Normalized Value
 | --------------- | ------------------- | -----------------------------
-| DE:MALO_ID      | &amp;#34;12345678901&amp;#34;       | &amp;#34;12345678901&amp;#34;
+| DE:MALO_ID      | &amp;#34;12345678901&amp;#34;     | &amp;#34;12345678901&amp;#34;
 | UK:MPAN         | &amp;#34;18 1066 1234 567 8901 234&amp;#34; | &amp;#34;18106612345678901234&amp;#34;
 | US_ERCOT:ESI_ID | &amp;#34;10443720000012345&amp;#34; | &amp;#34;10443720000012345&amp;#34;
-| AU:NMI          | &amp;#34;NEM1203456A&amp;#34;       | &amp;#34;NEM1203456A&amp;#34;
+| AU:NMI          | &amp;#34;NEM12-03456-A&amp;#34;     | &amp;#34;NEM1203456A&amp;#34;
 
 In each case, `value` preserves the original format as provided by the
 market operator, while `normalized_value` is an implementation-specific
@@ -2996,7 +2999,9 @@ comparisons.
 </tr>
 </tbody>
 </table>
-<p>Examples: - &#34;DE01234567890&#34; (Germany MaLo) - &#34;18 1066 1234 567 8901 234&#34; (UK MPAN with spaces) - &#34;NEM12-03456-A&#34; (AU NMI with hyphens) |
+<p>The service accepts both formatted and already-normalized values. Formatting characters (spaces, hyphens, prefixes) are ignored during validation. Validation is performed exclusively on a canonical normalized form derived from the input value, based on the type.</p>
+<p>Clients MUST NOT rely on formatting differences to distinguish identifiers.</p>
+<p>Examples: - &#34;01234567890&#34; (Germany MaLo) - &#34;18 1066 1234 567 8901 234&#34; (UK MPAN with spaces) - &#34;NEM12-03456-A&#34; (AU NMI with hyphens) |
 | type | <a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdType">MarketLocationIdType</a> |  | Identifies what type of official market identifier <code>value</code> represents. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationOperationResult"></a></p>
 <h3 id="marketlocationoperationresult">MarketLocationOperationResult<a class="headerlink" href="#marketlocationoperationresult" title="Permanent link">¤</a></h3>
@@ -4219,39 +4224,59 @@ via MarketArea.</p>
 <td>MALO_ID: Germany – Marktlokations-ID (MaLo-ID).</td>
 </tr>
 <tr>
-<td>MARKET_LOCATION_ID_TYPE_MPAN</td>
+<td>MARKET_LOCATION_ID_TYPE_ZAEHLPUNKT</td>
 <td>2</td>
+<td>ZAEHLPUNKT: Austria – Zählpunktbezeichnung (Semantically similar to Germany’s MaLo-ID).</td>
+</tr>
+<tr>
+<td>MARKET_LOCATION_ID_TYPE_MPAN</td>
+<td>3</td>
 <td>MPAN: United Kingdom – Meter Point Administration Number.</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_POD</td>
-<td>3</td>
+<td>4</td>
 <td>POD: Italy — Point of Delivery.</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_CUPS</td>
-<td>4</td>
+<td>5</td>
 <td>CUPS: Spain — Código Universal de Punto de Suministro.</td>
 </tr>
 <tr>
+<td>MARKET_LOCATION_ID_TYPE_PRM</td>
+<td>6</td>
+<td>PRM: France — Point de Référence et Mesure (PRM).</td>
+</tr>
+<tr>
 <td>MARKET_LOCATION_ID_TYPE_EAN</td>
-<td>5</td>
-<td>EAN: Continental Europe (e.g. FR, NL, BE, ...) — European Article Number.</td>
+<td>7</td>
+<td>EAN: Continental Europe (e.g. FR (legacy), NL, BE, PL, CZ, HU, ...) — European Article Number.</td>
+</tr>
+<tr>
+<td>MARKET_LOCATION_ID_TYPE_GSRN</td>
+<td>8</td>
+<td>GSRN: Nordic countries (e.g., DK, SE, NO, FI) — GS1 Global Service Relation Number.</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_ESI_ID</td>
-<td>6</td>
+<td>9</td>
 <td>ESI_ID: United States – Electric Service Identifier.</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_NMI</td>
-<td>7</td>
+<td>10</td>
 <td>NMI: Australia – National Metering Identifier.</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_ICP</td>
-<td>8</td>
+<td>11</td>
 <td>ICP: New Zealand — Installation Control Point.</td>
+</tr>
+<tr>
+<td>MARKET_LOCATION_ID_TYPE_SPN</td>
+<td>12</td>
+<td>SPN: Japan — Supply Point Number (需要地点特定番号).</td>
 </tr>
 <tr>
 <td>MARKET_LOCATION_ID_TYPE_OTHER</td>
