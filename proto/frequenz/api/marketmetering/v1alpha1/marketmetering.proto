@@ -339,26 +339,41 @@ enum MarketLocationIdType {
   // MALO_ID: Germany – Marktlokations-ID (MaLo-ID).
   MARKET_LOCATION_ID_TYPE_MALO_ID = 1;
 
+  // ZAEHLPUNKT: Austria – Zählpunktbezeichnung (Semantically similar to
+  // Germany’s MaLo-ID).
+  MARKET_LOCATION_ID_TYPE_ZAEHLPUNKT = 2;
+
   // MPAN: United Kingdom – Meter Point Administration Number.
-  MARKET_LOCATION_ID_TYPE_MPAN = 2;
+  MARKET_LOCATION_ID_TYPE_MPAN = 3;
 
   // POD: Italy — Point of Delivery.
-  MARKET_LOCATION_ID_TYPE_POD = 3;
+  MARKET_LOCATION_ID_TYPE_POD = 4;
 
   // CUPS: Spain — Código Universal de Punto de Suministro.
-  MARKET_LOCATION_ID_TYPE_CUPS = 4;
+  MARKET_LOCATION_ID_TYPE_CUPS = 5;
 
-  // EAN: Continental Europe (e.g. FR, NL, BE, ...) — European Article Number.
-  MARKET_LOCATION_ID_TYPE_EAN = 5;
+  // PRM: France — Point de Référence et de Mesure (PRM).
+  MARKET_LOCATION_ID_TYPE_PRM = 6;
+
+  // EAN: Continental Europe (e.g. FR (legacy), NL, BE, PL, CZ, HU, ...) —
+  // European Article Number.
+  MARKET_LOCATION_ID_TYPE_EAN = 7;
+
+  // GSRN: Nordic countries (e.g., DK, SE, NO, FI) — GS1 Global Service
+  // Relation Number.
+  MARKET_LOCATION_ID_TYPE_GSRN = 8;
 
   // ESI_ID: United States – Electric Service Identifier.
-  MARKET_LOCATION_ID_TYPE_ESI_ID = 6;
+  MARKET_LOCATION_ID_TYPE_ESI_ID = 9;
 
   // NMI: Australia – National Metering Identifier.
-  MARKET_LOCATION_ID_TYPE_NMI = 7;
+  MARKET_LOCATION_ID_TYPE_NMI = 10;
 
   // ICP: New Zealand — Installation Control Point.
-  MARKET_LOCATION_ID_TYPE_ICP = 8;
+  MARKET_LOCATION_ID_TYPE_ICP = 11;
+
+  // SPN: Japan — Supply Point Number (需要地点特定番号).
+  MARKET_LOCATION_ID_TYPE_SPN = 12;
 
   // OTHER: Generic meter identifier for markets not modeled explicitly yet.
   MARKET_LOCATION_ID_TYPE_OTHER = 99;
@@ -789,16 +804,20 @@ message ResamplingOptions {
 //   • US:       ESI-ID (Electric Service Identifier)
 //   • Australia NMI (National Metering Identifier)
 //
+// Different markets use incompatible identifier formats—varying in length,
+// character sets, checksum rules, and presentation formatting (spaces,
+// hyphens, prefixes).
+//
 // !!! example "Example values for different markets"
 //     The following examples illustrate how the fields may be populated for
 //     different jurisdictions:
 //
 //     | Market:Type     | Official ID         | Normalized Value
 //     | --------------- | ------------------- | -----------------------------
-//     | DE:MALO_ID      | "12345678901"       | "12345678901"
+//     | DE:MALO_ID      | "12345678901"     | "12345678901"
 //     | UK:MPAN         | "18 1066 1234 567 8901 234" | "18106612345678901234"
 //     | US_ERCOT:ESI_ID | "10443720000012345" | "10443720000012345"
-//     | AU:NMI          | "NEM1203456A"       | "NEM1203456A"
+//     | AU:NMI          | "NEM12-03456-A"     | "NEM1203456A"
 //
 //     In each case, `value` preserves the original format as provided by the
 //     market operator, while `normalized_value` is an implementation-specific
@@ -809,8 +828,15 @@ message MarketLocationId {
   // Opaque identifier in its original market format as received from the
   // source system (MSCONS, DataHub, CSV, manual entry, etc.).
   //
+  // The service accepts both formatted and already-normalized values.
+  // Formatting characters (spaces, hyphens, prefixes) are ignored during
+  // validation. Validation is performed exclusively on a canonical
+  // normalized form derived from the input value, based on the type.
+  //
+  // Clients MUST NOT rely on formatting differences to distinguish identifiers.
+  //
   // Examples:
-  //   - "DE01234567890" (Germany MaLo)
+  //   - "01234567890" (Germany MaLo)
   //   - "18 1066 1234 567 8901 234" (UK MPAN with spaces)
   //   - "NEM12-03456-A" (AU NMI with hyphens)
   string value = 1;

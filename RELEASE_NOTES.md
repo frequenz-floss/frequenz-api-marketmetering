@@ -2,18 +2,18 @@
 
 ## Summary
 
-This release extends the `MarketLocationIdType` and `MarketArea` enum, and improves the `MarketLocationOperationResult`.
+This release extends `MarketLocationIdType` and refined documentation of 
+`MarketLocationId` message.
 
 ## Upgrading
 
-- Extends `MarketArea` with new jurisdictions and clustered by geographic region
-- Extends `MarketLocationIdType` by introducing new external market identifiers
-- Extends `MarketLocationUpdate` to require latest revision number to be 
-  provided
+- Added new enum properties to MarketLocationIdType
+- Enhanced documentation of MarketLocationId message clarifying normalization 
+  of market location id for validation
 
 ## New Features
 
-- **Market Location Lifecycle**: `Activate` and `Deactivate` operations now return the new `revision` number in `MarketLocationOperationResult`.
+- n/a
 
 ## Bug Fixes
 
