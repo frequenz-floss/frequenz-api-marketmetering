@@ -352,7 +352,7 @@ enum MarketLocationIdType {
   // CUPS: Spain — Código Universal de Punto de Suministro.
   MARKET_LOCATION_ID_TYPE_CUPS = 5;
 
-  // PRM: France — Point de Référence et de Mesure (PRM).
+  // PRM: France — Point de Référence et Mesure (PRM).
   MARKET_LOCATION_ID_TYPE_PRM = 6;
 
   // EAN: Continental Europe (e.g. FR (legacy), NL, BE, PL, CZ, HU, ...) —
