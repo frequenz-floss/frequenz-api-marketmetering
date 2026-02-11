@@ -13,7 +13,6 @@ This release extends `MarketLocationIdType` and refined documentation of
 
 ## New Features
 
-- n/a
 
 ## Bug Fixes
 
