@@ -193,6 +193,13 @@ service MarketMeteringService {
   rpc ActivateMarketLocation(ActivateMarketLocationRequest)
       returns (ActivateMarketLocationResponse);
 
+  // Get a single Market Location by its reference.
+  //
+  // Returns NOT_FOUND if the Market Location does not exist within the
+  // specified enterprise.
+  rpc GetMarketLocation(GetMarketLocationRequest)
+      returns (GetMarketLocationResponse);
+
   // List Market Locations and their revisioned metadata.
   rpc ListMarketLocations(ListMarketLocationsRequest)
        returns (ListMarketLocationsResponse);
@@ -399,6 +406,12 @@ enum MarketLocationChangedField {
 
   // IS_ACTIVE: Activation status changed (activate/deactivate).
   MARKET_LOCATION_CHANGED_FIELD_IS_ACTIVE = 3;
+
+  // DISPLAY_NAME: Human-readable display name changed.
+  MARKET_LOCATION_CHANGED_FIELD_DISPLAY_NAME = 4;
+
+  // PAYLOAD: User-defined metadata changed.
+  MARKET_LOCATION_CHANGED_FIELD_PAYLOAD = 5;
 }
 
 // Classification of structured error conditions that may occur when activating
@@ -411,8 +424,9 @@ enum MarketLocationOperationErrorCode {
   // enterprise.
   MARKET_LOCATION_OPERATION_ERROR_CODE_NOT_FOUND = 1;
 
-  // ALREADY_IN_TARGET_STATE: The caller attempted to activate/deactivate a
-  // Market Location that is already in the desired state.
+  // ALREADY_IN_TARGET_STATE: The Market Location is already in the desired
+  // state. This is informational, not an error — the result will have
+  // success = true. No new revision is created.
   MARKET_LOCATION_OPERATION_ERROR_CODE_ALREADY_IN_TARGET_STATE = 2;
 
   // ENTERPRISE_MISMATCH: The provided market location id references an
@@ -427,6 +441,11 @@ enum MarketLocationOperationErrorCode {
   // OPERATION_REJECTED: A service validation rule or invariant prevented the
   // operation.
   MARKET_LOCATION_OPERATION_ERROR_CODE_OPERATION_REJECTED = 5;
+
+  // REVISION_MISMATCH: The expected_revision provided by the caller does not
+  // match the Market Location's current revision. The caller should re-read
+  // the current state and retry.
+  MARKET_LOCATION_OPERATION_ERROR_CODE_REVISION_MISMATCH = 6;
 
   // UNKNOWN_ERROR: Any other unexpected service-side error.
   MARKET_LOCATION_OPERATION_ERROR_CODE_UNKNOWN_ERROR = 99;
@@ -679,6 +698,18 @@ enum DownsamplingMethod {
 
   // MEAN: Arithmetic mean of all samples within the interval.
   DOWNSAMPLING_METHOD_MEAN = 1;
+
+  // SUM: Arithmetic sum of all samples within the interval.
+  //
+  // Appropriate for cumulative quantities such as energy (kWh, MWh),
+  // where the total over an interval is the natural aggregate. Using MEAN
+  // for energy values produces physically meaningless averages.
+  //
+  // !!! example
+  //     Native resolution: PT5M, values [1.2, 0.8, 1.0] kWh.
+  //     Downsampled to PT15M with SUM → 3.0 kWh.
+  //     Downsampled to PT15M with MEAN → 1.0 kWh (not meaningful for energy).
+  DOWNSAMPLING_METHOD_SUM = 2;
 }
 
 // Error classification for market location sample ingestion.
@@ -1343,11 +1374,11 @@ message CreateMarketLocationRequest {
 //     ```
 //
 message CreateMarketLocationResponse {
-  // Enterprise to which this Market Location belongs.
-  uint64 enterprise_id = 1;
-
   // Fully populated MarketLocationDetail after creation.
-  MarketLocationDetail market_location = 2;
+  //
+  // The enterprise_id is available via
+  // market_location.market_location_ref.enterprise_id.
+  MarketLocationDetail market_location = 1;
 }
 
 // Updates metadata of an existing Market Location.
@@ -1484,15 +1515,15 @@ message UpdateMarketLocationRequest {
 //     ```
 //
 message UpdateMarketLocationResponse {
-  // Enterprise that owns the Market Location.
-  uint64 enterprise_id = 1;
-
   // Updated Market Location metadata, including:
   //   • new revision number,
   //   • updated fields,
   //   • activation status,
   //   • timestamps.
-  MarketLocationDetail market_location_detail = 2;
+  //
+  // The enterprise_id is available via
+  // market_location_detail.market_location_ref.enterprise_id.
+  MarketLocationDetail market_location_detail = 1;
 }
 
 // Request to deactivate one or more Market Locations.
@@ -1508,11 +1539,27 @@ message UpdateMarketLocationResponse {
 //   • retains all historical revisions for audit, reporting, and compliance.
 //
 // The operation is idempotent: requesting deactivation for an already inactive
-// Market Location does not produce an error.
+// Market Location returns success = true with error_code =
+// ALREADY_IN_TARGET_STATE (informational, not an error). No new revision is
+// created in this case.
 //
 message DeactivateMarketLocationRequest {
+  // A single deactivation target with optional optimistic concurrency control.
+  message DeactivateTarget {
+    // The Market Location to deactivate.
+    MarketLocationRef market_location_ref = 1;
+
+    // Optional expected revision for optimistic concurrency control.
+    //
+    // When set, the operation succeeds only if the Market Location's current
+    // revision matches this value. This prevents lost updates when concurrent
+    // metadata changes and deactivation race. When unset, no concurrency
+    // check is performed.
+    optional uint64 expected_revision = 2;
+  }
+
   // List of Market Locations to deactivate.
-  repeated MarketLocationRef market_location_refs = 1;
+  repeated DeactivateTarget targets = 1;
 }
 
 // Response for batch deactivation of Market Locations.
@@ -1535,11 +1582,27 @@ message DeactivateMarketLocationResponse {
 // Historical samples, revisions, and metadata remain unchanged.
 //
 // The operation is idempotent: requesting activation for an already active
-// Market Location does not produce an error.
+// Market Location returns success = true with error_code =
+// ALREADY_IN_TARGET_STATE (informational, not an error). No new revision is
+// created in this case.
 //
 message ActivateMarketLocationRequest {
+  // A single activation target with optional optimistic concurrency control.
+  message ActivateTarget {
+    // The Market Location to activate.
+    MarketLocationRef market_location_ref = 1;
+
+    // Optional expected revision for optimistic concurrency control.
+    //
+    // When set, the operation succeeds only if the Market Location's current
+    // revision matches this value. This prevents lost updates when concurrent
+    // metadata changes and activation race. When unset, no concurrency
+    // check is performed.
+    optional uint64 expected_revision = 2;
+  }
+
   // List of Market Locations to activate.
-  repeated MarketLocationRef market_location_refs = 1;
+  repeated ActivateTarget targets = 1;
 }
 
 // Response for batch activation of Market Locations.
@@ -1654,26 +1717,47 @@ message ListMarketLocationsRequest {
 //     ```
 //
 message ListMarketLocationsResponse {
-  // A single entry in a Market Location listing response.
-  message MarketLocationEntry {
-    // Enterprise to which this Market Location belongs.
-    uint64 enterprise_id = 1;
-
-    // Market Location details for this entry.
-    MarketLocationDetail market_location = 2;
-  }
-
-  // The list of Market Locations belonging to the requesting client.
-  repeated MarketLocationEntry market_locations = 1;
+  // The list of Market Locations matching the filter criteria.
+  //
+  // Each entry is a MarketLocationDetail which includes the
+  // market_location_ref (containing enterprise_id) and full metadata.
+  repeated MarketLocationDetail market_locations = 1;
 
   // Pagination metadata including next_page_token.
   frequenz.api.common.v1alpha8.pagination.PaginationInfo pagination_info = 2;
 }
 
-// A single ingestion event for one Market Location sample.
+// Retrieves a single Market Location by its reference.
 //
-// Each request message processes exactly one sample and produces one
-// acknowledgement response.
+// !!! example "Example Request"
+//     ```json
+//     {
+//       "market_location_ref": {
+//         "enterprise_id": 42,
+//         "market_location_id": {
+//           "value": "DE01234567890",
+//           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//         }
+//       }
+//     }
+//     ```
+//
+message GetMarketLocationRequest {
+  // Identifies the Market Location to retrieve.
+  MarketLocationRef market_location_ref = 1;
+}
+
+// Response for retrieving a single Market Location.
+//
+// Returns the latest revision of the Market Location. If the Market Location
+// does not exist, the RPC returns a NOT_FOUND gRPC status.
+message GetMarketLocationResponse {
+  // The requested Market Location with full metadata and revision info.
+  MarketLocationDetail market_location_detail = 1;
+}
+
+// An ingestion event for one or more Market Location samples sharing the same
+// series key (market location, direction, metric type, metric unit).
 //
 // The server performs strict validation of:
 //   • timestamp alignment with the Market Location's contractual resolution,
@@ -1681,6 +1765,9 @@ message ListMarketLocationsResponse {
 //   • metric_type against supported metrics,
 //   • metric_unit consistency with metric_type,
 //   • revision monotonicity for the (ML, direction, metric, timestamp) tuple.
+//
+// For each request message the server produces exactly one response message
+// containing per-sample results.
 //
 // !!! important "Correction via revisioning (no deletion)"
 //     The MarketMeteringService never deletes samples. Regulated metering
@@ -1741,52 +1828,64 @@ message UpsertMarketLocationSamplesStreamRequest {
   // MUST be coherent with metric_type; no implicit unit conversion occurs.
   MetricUnit metric_unit = 4;
 
-  // Sample data, including sample_time, value, quality, and revision.
+  // One or more samples to ingest, all sharing the series key above.
   //
-  // sample.sample_time MUST:
+  // Batching multiple samples in a single message amortizes the per-message
+  // overhead of repeating market_location_ref, direction, metric_type, and
+  // metric_unit. This is especially beneficial for bulk ingestion of
+  // historical data (e.g., MSCONS files with thousands of intervals).
+  //
+  // Each sample's sample_time MUST:
   //   • be in UTC,
   //   • align with the Market Location time_resolution,
   //   • not violate configured ingestion rules (e.g., whether future timestamps
   //     are allowed).
-  MarketLocationSample sample = 5;
+  repeated MarketLocationSample samples = 5;
 }
 
-// Acknowledgement for a single upsert operation.
+// Acknowledgement for an upsert operation.
 //
-// Each upsert produces exactly one response.  This response ALWAYS echoes
-// the attempted sample, independent of whether the insert/update succeeded.
+// Each request message produces exactly one response message. The response
+// contains one result entry per sample submitted in the request, in the same
+// order.
 //
 message UpsertMarketLocationSamplesStreamResponse {
-  // The Market Location to which this sample belongs (echoed from request).
+  // Per-sample result within a batch.
+  message SampleResult {
+    // Echo of the client-submitted sample.
+    //
+    // !!! note
+    //     This field is populated even when ingestion fails. It represents
+    //     the attempted input—not the stored record. On success, its content
+    //     will match the stored sample except for server-generated metadata.
+    MarketLocationSample sample = 1;
+
+    // Timestamp (UTC) when the sample was successfully ingested.
+    //
+    // !!! note
+    //     • Populated only when success = true.
+    //     • This timestamp is assigned by the service and may differ from
+    //       client clock time.
+    google.protobuf.Timestamp ingest_time = 2;
+
+    // Whether this sample was ingested successfully.
+    bool success = 3;
+
+    // Optional machine-readable classification of a failure.
+    //
+    // !!! note
+    //     Populated only when success = false.
+    SampleUpsertErrorCode error_code = 4;
+
+    // Optional human-readable error message.
+    string error_message = 5;
+  }
+
+  // The Market Location to which the samples belong (echoed from request).
   MarketLocationRef market_location_ref = 1;
 
-  // Echo of the client-submitted sample.
-  //
-  // !!! note
-  //     This field is populated even when ingestion fails. It represents
-  //     the attempted input—not the stored record. On success, its content
-  //     will match the stored sample except for server-generated metadata.
-  MarketLocationSample sample = 2;
-
-  // Timestamp (UTC) when the sample was successfully ingested.
-  //
-  // !!! note
-  //     • Populated only when success = true.
-  //     • This timestamp is assigned by the service and may differ from
-  //       client clock time.
-  google.protobuf.Timestamp ingest_time = 3;
-
-  // Whether the upsert operation succeeded.
-  bool success = 4;
-
-  // Optional machine-readable classification of a failure.
-  //
-  // !!! note
-  //     Populated only when success = false.
-  SampleUpsertErrorCode error_code = 5;
-
-  // Optional human-readable error message.
-  string error_message = 6;
+  // Per-sample results, one per sample in the request, in the same order.
+  repeated SampleResult results = 2;
 }
 
 // Request for streaming time-series samples for one or more logical Market
@@ -1861,11 +1960,24 @@ message ReceiveMarketLocationSamplesStreamRequest {
   // Requested metric types (e.g., ENERGY, POWER).
   //
   // At least one metric type must be provided. The server produces one series
-  // per (market_location × direction × metric_type) tuple.
+  // per (market_location × direction × metric_type × metric_unit) tuple.
   repeated MetricType metric_types = 3;
 
-  // // Global stream-level filter applied to all returned series.
+  // Global stream-level filter applied to all returned series.
   MarketLocationSamplesStreamFilter stream_filter = 4;
+
+  // Optional filter for the physical unit of the samples (e.g., kWh, kW).
+  //
+  // When set, only series whose metric_unit matches one of the provided
+  // values are included. When empty, all units for the requested metric
+  // types are returned.
+  //
+  // !!! note "Avoiding mixed units"
+  //     If a Market Location has ENERGY samples stored in both kWh and MWh
+  //     (e.g., from different ingestion sources), this filter allows the
+  //     client to request only one unit and avoid mixing units in downstream
+  //     processing. The server does not perform unit conversion.
+  repeated MetricUnit metric_units = 5;
 }
 
 // Streaming response containing one or more time series fragments.
@@ -1963,10 +2075,12 @@ message ReceiveMarketLocationSamplesStreamRequest {
 //     ```
 //
 message ReceiveMarketLocationSamplesStreamResponse {
-  // Echoes the request's stream filter for client convenience.
-  MarketLocationSamplesStreamFilter stream_filter = 1;
-
   // List of market location metering time series included in this fragment.
-  repeated MarketLocationSeries series = 2;
+  //
+  // The stream filter (resampling, revision strategy, time window) is not
+  // echoed — the client already knows what it requested. This avoids
+  // repeating the same static payload in every chunked response message
+  // on long-running or real-time streams.
+  repeated MarketLocationSeries series = 1;
 }
 
