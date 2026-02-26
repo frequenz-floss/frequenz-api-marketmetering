@@ -379,14 +379,18 @@ enum MarketLocationIdType {
   MARKET_LOCATION_ID_TYPE_OTHER = 99;
 }
 
-// Indicates which fields of a Market Location changed in this revision.
+// Indicates which operationally relevant fields of a Market Location changed
+// in this revision.
 //
 // A revision may reflect one or many changed fields. The enum is intentionally
-// coarse-grained to mirror the update semantics.
+// coarse-grained and tracks only fields with operational significance for
+// filtering and lifecycle management. Not all mutable fields are tracked —
+// changes to display_name and payload are not represented here.
 //
 // !!! note
-//     If new updatable fields are added to MarketLocationUpdate in the future,
-//     a corresponding enum value should be added here.
+//     If new operationally relevant updatable fields are added to
+//     MarketLocationUpdate in the future, a corresponding enum value should
+//     be added here.
 enum MarketLocationChangedField {
   // UNSPECIFIED: Should not be used in valid responses.
   MARKET_LOCATION_CHANGED_FIELD_UNSPECIFIED = 0;
@@ -411,8 +415,9 @@ enum MarketLocationOperationErrorCode {
   // enterprise.
   MARKET_LOCATION_OPERATION_ERROR_CODE_NOT_FOUND = 1;
 
-  // ALREADY_IN_TARGET_STATE: The caller attempted to activate/deactivate a
-  // Market Location that is already in the desired state.
+  // ALREADY_IN_TARGET_STATE: The Market Location is already in the desired
+  // state. This is informational, not an error — the result will have
+  // success = true. No new revision is created.
   MARKET_LOCATION_OPERATION_ERROR_CODE_ALREADY_IN_TARGET_STATE = 2;
 
   // ENTERPRISE_MISMATCH: The provided market location id references an
@@ -1508,7 +1513,9 @@ message UpdateMarketLocationResponse {
 //   • retains all historical revisions for audit, reporting, and compliance.
 //
 // The operation is idempotent: requesting deactivation for an already inactive
-// Market Location does not produce an error.
+// Market Location returns success = true with error_code =
+// ALREADY_IN_TARGET_STATE (informational, not an error). No new revision is
+// created in this case.
 //
 message DeactivateMarketLocationRequest {
   // List of Market Locations to deactivate.
@@ -1535,7 +1542,9 @@ message DeactivateMarketLocationResponse {
 // Historical samples, revisions, and metadata remain unchanged.
 //
 // The operation is idempotent: requesting activation for an already active
-// Market Location does not produce an error.
+// Market Location returns success = true with error_code =
+// ALREADY_IN_TARGET_STATE (informational, not an error). No new revision is
+// created in this case.
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
