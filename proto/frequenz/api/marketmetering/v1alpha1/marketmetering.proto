@@ -1846,7 +1846,7 @@ message UpsertMarketLocationSamplesStreamResponse {
   // The Market Location to which this sample belongs (echoed from request).
   MarketLocationRef market_location_ref = 1;
 
-  // Energy-flow direction of the series (echoed from request).
+  // Energy-flow direction of the sample (echoed from request).
   EnergyFlowDirection direction = 2;
 
   // Metric type of the sample (echoed from request).
