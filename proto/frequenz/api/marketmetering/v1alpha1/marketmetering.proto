@@ -1821,7 +1821,7 @@ message UpsertMarketLocationSamplesStreamRequest {
   //   • be in UTC,
   //   • align with the Market Location time_resolution,
   //   • be within the service's allowed ingestion window.
-  MarketLocationSample samples = 5;
+  MarketLocationSample sample = 5;
 }
 
 // Acknowledgement for a single sample upsert operation.
