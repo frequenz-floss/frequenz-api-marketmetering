@@ -1849,10 +1849,10 @@ message UpsertMarketLocationSamplesStreamResponse {
   // Energy-flow direction of the series (echoed from request).
   EnergyFlowDirection direction = 2;
 
-  // Metric type of the series (echoed from request).
+  // Metric type of the sample (echoed from request).
   MetricType metric_type = 3;
 
-  // Metric unit of the series (echoed from request).
+  // Metric unit of the sample (echoed from request).
   MetricUnit metric_unit = 4;
 
   // Echo of the client-submitted sample.
