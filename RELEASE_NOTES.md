@@ -2,7 +2,7 @@
 
 ## Summary
 
-This release extends `MarketLocationIdType` and refined documentation of 
+This release extends `MarketLocationIdType` and refined documentation of
 `MarketLocationId` message.
 
 ## Upgrading
@@ -17,4 +17,5 @@ This release extends `MarketLocationIdType` and refined documentation of
 
 ## Bug Fixes
 
+- Fix docs: Remove market_area from example list for updating the revision.
 <!-- Here goes notable bug fixes that are worth a special mention or explanation -->
