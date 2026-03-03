@@ -968,9 +968,9 @@ message MarketLocationDetail {
   // Monotonically increasing revision counter.
   //
   // !!! note
-  //     Each metadata change (e.g., supported_directions, market area,
-  //     resolution, activation status) increments this counter.
-  //     ListMarketLocations returns only the latest revision by default.
+  //     Each metadata change (e.g., supported_directions, resolution,
+  //     activation status) increments this counter. ListMarketLocations
+  //     returns only the latest revision by default.
   uint64 revision = 3;
 
   // Whether the Market Location is currently active.
