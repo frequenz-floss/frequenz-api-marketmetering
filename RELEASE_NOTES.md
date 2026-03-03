@@ -7,9 +7,10 @@ This release extends `MarketLocationIdType` and refined documentation of
 
 ## Upgrading
 
-- Added new enum properties to MarketLocationIdType
-- Enhanced documentation of MarketLocationId message clarifying normalization 
-  of market location id for validation
+- Remove misleading documentation
+- Added echoing direction, metric_type and metric_unit when inserting samples
+- Reworked streaming response for upserting market locations and samples.
+- Remove bool success in favour of just checking if error is unset
 
 ## New Features
 

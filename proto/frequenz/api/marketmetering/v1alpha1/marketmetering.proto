@@ -825,24 +825,30 @@ message ResamplingOptions {
 //     comparisons.
 //
 message MarketLocationId {
-  // Opaque identifier in its original market format as received from the
-  // source system (MSCONS, DataHub, CSV, manual entry, etc.).
-  //
-  // The service accepts both formatted and already-normalized values.
-  // Formatting characters (spaces, hyphens, prefixes) are ignored during
-  // validation. Validation is performed exclusively on a canonical
-  // normalized form derived from the input value, based on the type.
-  //
-  // Clients MUST NOT rely on formatting differences to distinguish identifiers.
-  //
-  // Examples:
-  //   - "01234567890" (Germany MaLo)
-  //   - "18 1066 1234 567 8901 234" (UK MPAN with spaces)
-  //   - "NEM12-03456-A" (AU NMI with hyphens)
-  string value = 1;
+  // Official market location identifier.
+  MarketLocationIdValue id = 1;
 
-  // Identifies what type of official market identifier `value` represents.
+  // Identifies what type of official market identifier `id` represents.
   MarketLocationIdType type = 2;
+}
+
+// Opaque identifier in its original market format as received from the
+// source system (MSCONS, DataHub, CSV, manual entry, etc.).
+//
+// The service accepts both formatted and already-normalized values.
+// Formatting characters (spaces, hyphens, prefixes) are ignored during
+// validation. Validation is performed exclusively on a canonical
+// normalized form derived from the input value, based on the type.
+//
+// Clients MUST NOT rely on formatting differences to distinguish identifiers.
+//
+// Examples:
+//   - "01234567890" (Germany MaLo)
+//   - "18 1066 1234 567 8901 234" (UK MPAN with spaces)
+//   - "NEM12-03456-A" (AU NMI with hyphens)
+message MarketLocationIdValue {
+  // Official market location identifier.
+  string value = 1;
 }
 
 // Identifies a Market Location within a specific enterprise.
@@ -1018,10 +1024,7 @@ message MarketLocationDetail {
 //
 message MarketLocationsFilter {
   // Optional filter to match one or more Market Locations by their official ID.
-  //
-  // Matching is performed using logical OR:
-  //     If any listed identifier matches, the Market Location is included.
-  repeated MarketLocationId market_location_id_filters = 1;
+  repeated MarketLocationIdValue market_location_id_filters = 1;
 
   // Optional filter for which activation states to include.
   //
@@ -1151,6 +1154,49 @@ message MarketLocationSeries {
   repeated MarketLocationSampleDetail samples = 6;
 }
 
+// Structured error information for a rejected sample upsert.
+//
+// A SampleUpsertError describes why a sample could not be inserted or updated.
+// It provides both a machine-readable classification and optional diagnostic
+// information to support reconciliation and retry logic.
+//
+// !!! note "Error presence semantics"
+//     This message is present only when the upsert was rejected.
+//
+message SampleUpsertError {
+  // Machine-readable classification of a failure.
+  SampleUpsertErrorCode error_code = 1;
+
+  // Optional human-readable diagnostic message intended for logging and
+  // debugging.
+  string error_message = 2;
+
+  // The stored sample that prevented this upsert.
+  //
+  // Populated only when the service can identify an existing stored sample
+  // for the same tuple:
+  //
+  //   (market_location_ref, direction, metric_type, metric_unit, sample_time)
+  //
+  // Behavior by error_code:
+  //
+  //   • REVISION_CONFLICT
+  //       A sample with the same revision already exists but differs in
+  //       payload. The returned sample has the same revision number.
+  //
+  //   • REVISION_TOO_OLD
+  //       A newer revision already exists. The returned sample represents
+  //       the latest stored revision (highest numeric revision).
+  //
+  //   • Other error codes
+  //       This field is unset.
+  //
+  // !!! important
+  //     `existing_sample` always refers to the same logical tuple as the
+  //     request. It never refers to a different timestamp or metric.
+  MarketLocationSampleDetail existing_sample = 3;
+}
+
 // Filters records by a UTC time interval.
 //
 // A metering sample represents a measured value for a fixed-resolution interval
@@ -1192,26 +1238,58 @@ message TimeFilter {
   frequenz.api.common.v1alpha8.types.Interval interval = 1;
 }
 
+// Structured error information for a rejected Market Location operation.
+//
+// This message is present only when the requested operation could not be
+// applied. It provides a machine-readable error code and a human-readable
+// diagnostic message for logging.
+//
+message MarketLocationOperationError {
+  // Machine-readable classification of the failure.
+  //
+  // !!! important
+  //     This field MUST be set when MarketLocationOperationError is present.
+  MarketLocationOperationErrorCode code = 1;
+
+  // Human-readable diagnostic message intended for logging and debugging.
+  //
+  // !!! note
+  //     This field is not guaranteed to be stable and must not be parsed
+  //     programmatically.
+  string message = 2;
+}
+
 // Result of a Market Location lifecycle operation (activate, deactivate, etc.).
+//
+// Each requested MarketLocationRef yields exactly one result entry.
+// The presence of `error` determines whether the operation was applied:
+//
+// !!! note
+//   • If `error`is unset the operation succeeded and mutation occurred.
+//   • If `error`is set the operation failed and no mutation occurred.
+//
 message MarketLocationOperationResult {
-  // Market Location on which the operation was performed.
+  // Market Location on which the operation was requested.
   MarketLocationRef market_location_ref = 1;
 
-  // Whether the operation succeeded.
-  bool success = 2;
-
-  // Timestamp of the operation when success = true.
-  google.protobuf.Timestamp update_time = 3;
-
-  // Machine-readable error classification.
-  MarketLocationOperationErrorCode error_code = 4;
-
-  // Human-readable error explanation or backend diagnostic message.
-  string error_message = 5;
+  // Timestamp (UTC) when the operation was successfully applied.
+  //
+  // !!! note
+  //     Populated only when `error` is unset.
+  google.protobuf.Timestamp update_time = 2;
 
   // The new revision of the Market Location after the operation.
-  // Populated when success = true.
-  uint64 revision = 6;
+  //
+  // !!! note
+  //     Populated only when `error` is unset.
+  uint64 revision = 3;
+
+  // Error details describing why the operation was rejected.
+  //
+  // !!! note
+  //     • If unset the operation was applied.
+  //     • If set the operation was rejected and no mutation occurred.
+  MarketLocationOperationError error = 4;
 }
 
 // General filter criteria for querying samples uniformly apply to all Market
@@ -1507,9 +1585,6 @@ message UpdateMarketLocationResponse {
 //   • is omitted from default listing operations (unless explicitly requested),
 //   • retains all historical revisions for audit, reporting, and compliance.
 //
-// The operation is idempotent: requesting deactivation for an already inactive
-// Market Location does not produce an error.
-//
 message DeactivateMarketLocationRequest {
   // List of Market Locations to deactivate.
   repeated MarketLocationRef market_location_refs = 1;
@@ -1533,9 +1608,6 @@ message DeactivateMarketLocationResponse {
 // Activation marks the Market Location as active again for normal operations,
 // allowing new sample ingestion and inclusion in default listings.
 // Historical samples, revisions, and metadata remain unchanged.
-//
-// The operation is idempotent: requesting activation for an already active
-// Market Location does not produce an error.
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
@@ -1706,7 +1778,9 @@ message ListMarketLocationsResponse {
 //       time_resolution = PT15M → allowed times are:
 //         00:00, 00:15, 00:30, 00:45, ...
 //
-//     Misaligned timestamps are rejected.
+//     Misaligned timestamps are rejected. By default, the service rejects
+//     samples whose `sample_time` is in the future relative to the server
+//     clock and may also reject samples that are too far in the past.
 //
 // !!! warning "Metric-unit consistency is validated"
 //     The provided metric_unit MUST be compatible with metric_type.
@@ -1733,7 +1807,7 @@ message UpsertMarketLocationSamplesStreamRequest {
 
   // The metric type being ingested (e.g., ENERGY, POWER).
   //
-  // MUST be supported for the Market Location and consistent with metric_unit.
+  // MUST be consistent with `metric_unit` below.
   MetricType metric_type = 3;
 
   // The physical unit of the value (e.g., kWh, kW).
@@ -1746,19 +1820,40 @@ message UpsertMarketLocationSamplesStreamRequest {
   // sample.sample_time MUST:
   //   • be in UTC,
   //   • align with the Market Location time_resolution,
-  //   • not violate configured ingestion rules (e.g., whether future timestamps
-  //     are allowed).
+  //   • be within the service's allowed ingestion window.
   MarketLocationSample sample = 5;
 }
 
-// Acknowledgement for a single upsert operation.
+// Acknowledgement for a single sample upsert operation.
 //
-// Each upsert produces exactly one response.  This response ALWAYS echoes
-// the attempted sample, independent of whether the insert/update succeeded.
+// Each request message produces exactly one response message.
+// The response ALWAYS echoes the attempted input sample, regardless of
+// whether the operation succeeded or was rejected.
+//
+// The presence of `error` determines whether the upsert was accepted:
+//
+//   • error unset → the sample was accepted (inserted or recognized as
+//                   an idempotent no-op).
+//   • error set   → the sample was rejected.
+//
+// !!! note "Echo semantics"
+//     The `sample` field always represents the client-submitted payload.
+//     It does NOT reflect server-side canonicalization or stored metadata.
+//     In particular, server-assigned timestamps (e.g. ingest_time) are
+//     returned separately.
 //
 message UpsertMarketLocationSamplesStreamResponse {
   // The Market Location to which this sample belongs (echoed from request).
   MarketLocationRef market_location_ref = 1;
+
+  // Energy-flow direction of the sample (echoed from request).
+  EnergyFlowDirection direction = 2;
+
+  // Metric type of the sample (echoed from request).
+  MetricType metric_type = 3;
+
+  // Metric unit of the sample (echoed from request).
+  MetricUnit metric_unit = 4;
 
   // Echo of the client-submitted sample.
   //
@@ -1766,27 +1861,22 @@ message UpsertMarketLocationSamplesStreamResponse {
   //     This field is populated even when ingestion fails. It represents
   //     the attempted input—not the stored record. On success, its content
   //     will match the stored sample except for server-generated metadata.
-  MarketLocationSample sample = 2;
+  MarketLocationSample sample = 5;
 
-  // Timestamp (UTC) when the sample was successfully ingested.
+  // Timestamp (UTC) when the sample was successfully processed by the service.
   //
   // !!! note
-  //     • Populated only when success = true.
-  //     • This timestamp is assigned by the service and may differ from
-  //       client clock time.
-  google.protobuf.Timestamp ingest_time = 3;
+  //     • Populated only when `error` is unset.
+  //     • Assigned by the service and may differ from client clock time.
+  //     • Represents ingestion/acceptance time, not `sample.sample_time`.
+  google.protobuf.Timestamp ingest_time = 6;
 
-  // Whether the upsert operation succeeded.
-  bool success = 4;
-
-  // Optional machine-readable classification of a failure.
+  // Optional error details. If set, the upsert was rejected.
   //
   // !!! note
-  //     Populated only when success = false.
-  SampleUpsertErrorCode error_code = 5;
-
-  // Optional human-readable error message.
-  string error_message = 6;
+  //     • If unset the upsert was accepted.
+  //     • If set the upsert was rejected and no mutation occurred.
+  SampleUpsertError error = 7;
 }
 
 // Request for streaming time-series samples for one or more logical Market
