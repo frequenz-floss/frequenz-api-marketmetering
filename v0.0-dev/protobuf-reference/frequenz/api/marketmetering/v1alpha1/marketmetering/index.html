@@ -976,6 +976,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#marketlocationidvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationIdValue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#marketlocationoperationerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationOperationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#marketlocationoperationresult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1090,6 +1112,17 @@
     <span class="md-ellipsis">
       
         ResamplingOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampleupserterror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SampleUpsertError
       
     </span>
   </a>
@@ -1993,6 +2026,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#marketlocationidvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationIdValue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#marketlocationoperationerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationOperationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#marketlocationoperationresult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2107,6 +2162,17 @@
     <span class="md-ellipsis">
       
         ResamplingOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampleupserterror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SampleUpsertError
       
     </span>
   </a>
@@ -2399,6 +2465,8 @@
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocation">MarketLocation</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationDetail">MarketLocationDetail</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationId">MarketLocationId</a></li>
+<li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdValue">MarketLocationIdValue</a></li>
+<li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationOperationError">MarketLocationOperationError</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationOperationResult">MarketLocationOperationResult</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRevisionSelection">MarketLocationRevisionSelection</a></li>
@@ -2410,6 +2478,7 @@
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ReceiveMarketLocationSamplesStreamRequest">ReceiveMarketLocationSamplesStreamRequest</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ReceiveMarketLocationSamplesStreamResponse">ReceiveMarketLocationSamplesStreamResponse</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ResamplingOptions">ResamplingOptions</a></li>
+<li><a href="#frequenz-api-marketmetering-v1alpha1-SampleUpsertError">SampleUpsertError</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-TimeFilter">TimeFilter</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-UpdateMarketLocationRequest">UpdateMarketLocationRequest</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-UpdateMarketLocationRequest-MarketLocationUpdate">UpdateMarketLocationRequest.MarketLocationUpdate</a></li>
@@ -2455,8 +2524,6 @@
 <p>Activation marks the Market Location as active again for normal operations,
 allowing new sample ingestion and inclusion in default listings.
 Historical samples, revisions, and metadata remain unchanged.</p>
-<p>The operation is idempotent: requesting activation for an already active
-Market Location does not produce an error.</p>
 <table>
 <thead>
 <tr>
@@ -2618,8 +2685,6 @@ when they are no longer active.</p>
   • cannot receive new samples,
   • is omitted from default listing operations (unless explicitly requested),
   • retains all historical revisions for audit, reporting, and compliance.</p>
-<p>The operation is idempotent: requesting deactivation for an already inactive
-Market Location does not produce an error.</p>
 <table>
 <thead>
 <tr>
@@ -2992,20 +3057,87 @@ comparisons.
 </thead>
 <tbody>
 <tr>
-<td>value</td>
-<td><a href="#string">string</a></td>
+<td>id</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdValue">MarketLocationIdValue</a></td>
 <td></td>
-<td>Opaque identifier in its original market format as received from the source system (MSCONS, DataHub, CSV, manual entry, etc.).</td>
+<td>Official market location identifier.</td>
+</tr>
+<tr>
+<td>type</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdType">MarketLocationIdType</a></td>
+<td></td>
+<td>Identifies what type of official market identifier <code>id</code> represents.</td>
 </tr>
 </tbody>
 </table>
-<p>The service accepts both formatted and already-normalized values. Formatting characters (spaces, hyphens, prefixes) are ignored during validation. Validation is performed exclusively on a canonical normalized form derived from the input value, based on the type.</p>
+<p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationIdValue"></a></p>
+<h3 id="marketlocationidvalue">MarketLocationIdValue<a class="headerlink" href="#marketlocationidvalue" title="Permanent link">¤</a></h3>
+<p>Opaque identifier in its original market format as received from the
+source system (MSCONS, DataHub, CSV, manual entry, etc.).</p>
+<p>The service accepts both formatted and already-normalized values.
+Formatting characters (spaces, hyphens, prefixes) are ignored during
+validation. Validation is performed exclusively on a canonical
+normalized form derived from the input value, based on the type.</p>
 <p>Clients MUST NOT rely on formatting differences to distinguish identifiers.</p>
-<p>Examples: - &#34;01234567890&#34; (Germany MaLo) - &#34;18 1066 1234 567 8901 234&#34; (UK MPAN with spaces) - &#34;NEM12-03456-A&#34; (AU NMI with hyphens) |
-| type | <a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdType">MarketLocationIdType</a> |  | Identifies what type of official market identifier <code>value</code> represents. |</p>
+<p>Examples:
+  - &#34;01234567890&#34; (Germany MaLo)
+  - &#34;18 1066 1234 567 8901 234&#34; (UK MPAN with spaces)
+  - &#34;NEM12-03456-A&#34; (AU NMI with hyphens)</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>value</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>Official market location identifier.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationOperationError"></a></p>
+<h3 id="marketlocationoperationerror">MarketLocationOperationError<a class="headerlink" href="#marketlocationoperationerror" title="Permanent link">¤</a></h3>
+<p>Structured error information for a rejected Market Location operation.</p>
+<p>This message is present only when the requested operation could not be
+applied. It provides a machine-readable error code and a human-readable
+diagnostic message for logging.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>code</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationOperationErrorCode">MarketLocationOperationErrorCode</a></td>
+<td></td>
+<td>Machine-readable classification of the failure.</td>
+</tr>
+</tbody>
+</table>
+<p>!!! important This field MUST be set when MarketLocationOperationError is present. |
+| message | <a href="#string">string</a> |  | Human-readable diagnostic message intended for logging and debugging.</p>
+<p>!!! note This field is not guaranteed to be stable and must not be parsed programmatically. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationOperationResult"></a></p>
 <h3 id="marketlocationoperationresult">MarketLocationOperationResult<a class="headerlink" href="#marketlocationoperationresult" title="Permanent link">¤</a></h3>
 <p>Result of a Market Location lifecycle operation (activate, deactivate, etc.).</p>
+<p>Each requested MarketLocationRef yields exactly one result entry.
+The presence of <code>error</code> determines whether the operation was applied:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+</div>
+<p>• If <code>error</code>is unset the operation succeeded and mutation occurred.
+  • If <code>error</code>is set the operation failed and no mutation occurred.</p>
 <table>
 <thead>
 <tr>
@@ -3020,40 +3152,21 @@ comparisons.
 <td>market_location_ref</td>
 <td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
 <td></td>
-<td>Market Location on which the operation was performed.</td>
-</tr>
-<tr>
-<td>success</td>
-<td><a href="#bool">bool</a></td>
-<td></td>
-<td>Whether the operation succeeded.</td>
+<td>Market Location on which the operation was requested.</td>
 </tr>
 <tr>
 <td>update_time</td>
 <td><a href="#google-protobuf-Timestamp">google.protobuf.Timestamp</a></td>
 <td></td>
-<td>Timestamp of the operation when success = true.</td>
-</tr>
-<tr>
-<td>error_code</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationOperationErrorCode">MarketLocationOperationErrorCode</a></td>
-<td></td>
-<td>Machine-readable error classification.</td>
-</tr>
-<tr>
-<td>error_message</td>
-<td><a href="#string">string</a></td>
-<td></td>
-<td>Human-readable error explanation or backend diagnostic message.</td>
-</tr>
-<tr>
-<td>revision</td>
-<td><a href="#uint64">uint64</a></td>
-<td></td>
-<td>The new revision of the Market Location after the operation. Populated when success = true.</td>
+<td>Timestamp (UTC) when the operation was successfully applied.</td>
 </tr>
 </tbody>
 </table>
+<p>!!! note Populated only when <code>error</code> is unset. |
+| revision | <a href="#uint64">uint64</a> |  | The new revision of the Market Location after the operation.</p>
+<p>!!! note Populated only when <code>error</code> is unset. |
+| error | <a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationOperationError">MarketLocationOperationError</a> |  | Error details describing why the operation was rejected.</p>
+<p>!!! note • If unset the operation was applied. • If set the operation was rejected and no mutation occurred. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationRef"></a></p>
 <h3 id="marketlocationref">MarketLocationRef<a class="headerlink" href="#marketlocationref" title="Permanent link">¤</a></h3>
 <p>Identifies a Market Location within a specific enterprise.
@@ -3285,14 +3398,18 @@ result.</p>
 <tbody>
 <tr>
 <td>market_location_id_filters</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationId">MarketLocationId</a></td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationIdValue">MarketLocationIdValue</a></td>
 <td>repeated</td>
 <td>Optional filter to match one or more Market Locations by their official ID.</td>
 </tr>
+<tr>
+<td>activation_filter</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-ActivationFilter">ActivationFilter</a></td>
+<td></td>
+<td>Optional filter for which activation states to include.</td>
+</tr>
 </tbody>
 </table>
-<p>Matching is performed using logical OR: If any listed identifier matches, the Market Location is included. |
-| activation_filter | <a href="#frequenz-api-marketmetering-v1alpha1-ActivationFilter">ActivationFilter</a> |  | Optional filter for which activation states to include.</p>
 <p>!!! note &#34;Default Behavior&#34; By default, only active Market Locations are returned. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-ReceiveMarketLocationSamplesStreamRequest"></a></p>
 <h3 id="receivemarketlocationsamplesstreamrequest">ReceiveMarketLocationSamplesStreamRequest<a class="headerlink" href="#receivemarketlocationsamplesstreamrequest" title="Permanent link">¤</a></h3>
@@ -3553,6 +3670,51 @@ The resampled series consists of points:
 </tr>
 </tbody>
 </table>
+<p><a name="frequenz-api-marketmetering-v1alpha1-SampleUpsertError"></a></p>
+<h3 id="sampleupserterror">SampleUpsertError<a class="headerlink" href="#sampleupserterror" title="Permanent link">¤</a></h3>
+<p>Structured error information for a rejected sample upsert.</p>
+<p>A SampleUpsertError describes why a sample could not be inserted or updated.
+It provides both a machine-readable classification and optional diagnostic
+information to support reconciliation and retry logic.</p>
+<p>!!! note &#34;Error presence semantics&#34;
+    This message is present only when the upsert was rejected.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>error_code</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-SampleUpsertErrorCode">SampleUpsertErrorCode</a></td>
+<td></td>
+<td>Machine-readable classification of a failure.</td>
+</tr>
+<tr>
+<td>error_message</td>
+<td><a href="#string">string</a></td>
+<td></td>
+<td>Optional human-readable diagnostic message intended for logging and debugging.</td>
+</tr>
+<tr>
+<td>existing_sample</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSampleDetail">MarketLocationSampleDetail</a></td>
+<td></td>
+<td>The stored sample that prevented this upsert.</td>
+</tr>
+</tbody>
+</table>
+<p>Populated only when the service can identify an existing stored sample for the same tuple:</p>
+<p>(market_location_ref, direction, metric_type, metric_unit, sample_time)</p>
+<p>Behavior by error_code:</p>
+<p>• REVISION_CONFLICT A sample with the same revision already exists but differs in payload. The returned sample has the same revision number.</p>
+<p>• REVISION_TOO_OLD A newer revision already exists. The returned sample represents the latest stored revision (highest numeric revision).</p>
+<p>• Other error codes This field is unset.</p>
+<p>!!! important <code>existing_sample</code> always refers to the same logical tuple as the request. It never refers to a different timestamp or metric. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-TimeFilter"></a></p>
 <h3 id="timefilter">TimeFilter<a class="headerlink" href="#timefilter" title="Permanent link">¤</a></h3>
 <p>Filters records by a UTC time interval.</p>
@@ -3794,7 +3956,9 @@ revisions remain queryable via revision strategies.
   time_resolution = PT15M → allowed times are:
     00:00, 00:15, 00:30, 00:45, ...
 
-Misaligned timestamps are rejected.
+Misaligned timestamps are rejected. By default, the service rejects
+samples whose `sample_time` is in the future relative to the server
+clock and may also reject samples that are too far in the past.
 </code></pre></div>
 <p>!!! warning &#34;Metric-unit consistency is validated&#34;
     The provided metric_unit MUST be compatible with metric_type.
@@ -3833,16 +3997,26 @@ Misaligned timestamps are rejected.
 </table>
 <p>MUST match one of the Market Location&#39;s supported_directions, or the request is rejected. |
 | metric_type | <a href="#frequenz-api-marketmetering-v1alpha1-MetricType">MetricType</a> |  | The metric type being ingested (e.g., ENERGY, POWER).</p>
-<p>MUST be supported for the Market Location and consistent with metric_unit. |
+<p>MUST be consistent with <code>metric_unit</code> below. |
 | metric_unit | <a href="#frequenz-api-marketmetering-v1alpha1-MetricUnit">MetricUnit</a> |  | The physical unit of the value (e.g., kWh, kW).</p>
 <p>MUST be coherent with metric_type; no implicit unit conversion occurs. |
 | sample | <a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSample">MarketLocationSample</a> |  | Sample data, including sample_time, value, quality, and revision.</p>
-<p>sample.sample_time MUST: • be in UTC, • align with the Market Location time_resolution, • not violate configured ingestion rules (e.g., whether future timestamps are allowed). |</p>
+<p>sample.sample_time MUST: • be in UTC, • align with the Market Location time_resolution, • be within the service&#39;s allowed ingestion window. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-UpsertMarketLocationSamplesStreamResponse"></a></p>
 <h3 id="upsertmarketlocationsamplesstreamresponse">UpsertMarketLocationSamplesStreamResponse<a class="headerlink" href="#upsertmarketlocationsamplesstreamresponse" title="Permanent link">¤</a></h3>
-<p>Acknowledgement for a single upsert operation.</p>
-<p>Each upsert produces exactly one response.  This response ALWAYS echoes
-the attempted sample, independent of whether the insert/update succeeded.</p>
+<p>Acknowledgement for a single sample upsert operation.</p>
+<p>Each request message produces exactly one response message.
+The response ALWAYS echoes the attempted input sample, regardless of
+whether the operation succeeded or was rejected.</p>
+<p>The presence of <code>error</code> determines whether the upsert was accepted:</p>
+<p>• error unset → the sample was accepted (inserted or recognized as
+                  an idempotent no-op).
+  • error set   → the sample was rejected.</p>
+<p>!!! note &#34;Echo semantics&#34;
+    The <code>sample</code> field always represents the client-submitted payload.
+    It does NOT reflect server-side canonicalization or stored metadata.
+    In particular, server-assigned timestamps (e.g. ingest_time) are
+    returned separately.</p>
 <table>
 <thead>
 <tr>
@@ -3860,6 +4034,24 @@ the attempted sample, independent of whether the insert/update succeeded.</p>
 <td>The Market Location to which this sample belongs (echoed from request).</td>
 </tr>
 <tr>
+<td>direction</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-EnergyFlowDirection">EnergyFlowDirection</a></td>
+<td></td>
+<td>Energy-flow direction of the sample (echoed from request).</td>
+</tr>
+<tr>
+<td>metric_type</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MetricType">MetricType</a></td>
+<td></td>
+<td>Metric type of the sample (echoed from request).</td>
+</tr>
+<tr>
+<td>metric_unit</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MetricUnit">MetricUnit</a></td>
+<td></td>
+<td>Metric unit of the sample (echoed from request).</td>
+</tr>
+<tr>
 <td>sample</td>
 <td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSample">MarketLocationSample</a></td>
 <td></td>
@@ -3868,12 +4060,10 @@ the attempted sample, independent of whether the insert/update succeeded.</p>
 </tbody>
 </table>
 <p>!!! note This field is populated even when ingestion fails. It represents the attempted input—not the stored record. On success, its content will match the stored sample except for server-generated metadata. |
-| ingest_time | <a href="#google-protobuf-Timestamp">google.protobuf.Timestamp</a> |  | Timestamp (UTC) when the sample was successfully ingested.</p>
-<p>!!! note • Populated only when success = true. • This timestamp is assigned by the service and may differ from client clock time. |
-| success | <a href="#bool">bool</a> |  | Whether the upsert operation succeeded. |
-| error_code | <a href="#frequenz-api-marketmetering-v1alpha1-SampleUpsertErrorCode">SampleUpsertErrorCode</a> |  | Optional machine-readable classification of a failure.</p>
-<p>!!! note Populated only when success = false. |
-| error_message | <a href="#string">string</a> |  | Optional human-readable error message. |</p>
+| ingest_time | <a href="#google-protobuf-Timestamp">google.protobuf.Timestamp</a> |  | Timestamp (UTC) when the sample was successfully processed by the service.</p>
+<p>!!! note • Populated only when <code>error</code> is unset. • Assigned by the service and may differ from client clock time. • Represents ingestion/acceptance time, not <code>sample.sample_time</code>. |
+| error | <a href="#frequenz-api-marketmetering-v1alpha1-SampleUpsertError">SampleUpsertError</a> |  | Optional error details. If set, the upsert was rejected.</p>
+<p>!!! note • If unset the upsert was accepted. • If set the upsert was rejected and no mutation occurred. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-ActivationFilter"></a></p>
 <h3 id="activationfilter">ActivationFilter<a class="headerlink" href="#activationfilter" title="Permanent link">¤</a></h3>
 <p>Activation-state filter for Market Locations.</p>
