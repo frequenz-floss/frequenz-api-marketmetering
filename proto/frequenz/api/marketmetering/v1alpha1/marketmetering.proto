@@ -851,14 +851,24 @@ message MarketLocationIdValue {
   string value = 1;
 }
 
-// Identifies a Market Location within a specific enterprise.
+// Identifies a Market Location within a specific enterprise and market area.
+//
 // This tuple is globally unique across all tenants.
+//
+// !!! important "Immutability"
+//     All fields of `MarketLocationRef` are immutable once a Market Location
+//     has been created. They form the stable, external key used in every RPC
+//     that references a Market Location (create, update, activate, deactivate,
+//     ingest, stream).
 message MarketLocationRef {
   // Unique enterprise id for this Market Location.
   uint64 enterprise_id = 1;
 
+  // Regulatory jurisdiction in which this Market Location is registered.
+  MarketArea market_area = 2;
+
   // Market-wide identifier (MaLo, MPAN, ESI-ID, NMI, …).
-  MarketLocationId market_location_id = 2;
+  MarketLocationId market_location_id = 3;
 }
 
 // Represents a logical Market Location used in regulated electricity markets.
@@ -873,7 +883,6 @@ message MarketLocationRef {
 //     ```json
 //     {
 //       "display_name": "Main Office – Consumption",
-//       "market_area": "MARKET_AREA_DE",
 //       "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
 //       "time_resolution": "TIME_RESOLUTION_15_MIN",
 //       "payload": {
@@ -887,9 +896,6 @@ message MarketLocationRef {
 message MarketLocation {
   // Optional human-readable name for organizational use.
   string display_name = 1;
-
-  // Jurisdiction in which this Market Location is registered.
-  MarketArea market_area = 2;
 
   // Supported energy-flow directions for this Market Location.
   //
@@ -910,7 +916,7 @@ message MarketLocation {
   //     • UK (MPAN)
   //       - A single MPAN may support both directions → [IMPORT, EXPORT]
   //
-  repeated EnergyFlowDirection supported_directions = 3;
+  repeated EnergyFlowDirection supported_directions = 2;
 
   // Primary contractual time resolution for this Market Location.
   //
@@ -920,13 +926,13 @@ message MarketLocation {
   // !!! note
   //     Some markets provide multiple resolutions. This is metadata
   //     describing the primary resolution (e.g., PT15M).
-  TimeResolution time_resolution = 4;
+  TimeResolution time_resolution = 3;
 
   // Optional user-defined metadata.
   //
   // Clients may store arbitrary structured data (e.g., cost centers, internal
   // references, grouping labels, billing metadata).
-  google.protobuf.Struct payload = 5;
+  google.protobuf.Struct payload = 4;
 }
 
 // Detailed representation of a Market Location, including metadata necessary
@@ -944,11 +950,12 @@ message MarketLocation {
 //           "value": "DE01234567890",
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
 //         },
+//         "market_area": "MARKET_AREA_EU_DE"
+//       },
 //       "market_location": {
 //         "display_name": "Main Office – Consumption",
-//         "market_area": "MARKET_AREA_DE",
 //         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
-//         "time_resolution": "TIME_RESOLUTION_15_MIN",
+//         "time_resolution": "TIME_RESOLUTION_15_MIN"
 //       },
 //       "revision": 3,
 //       "is_active": true,
@@ -961,8 +968,8 @@ message MarketLocationDetail {
   // Official market identifier for this Market Location
   MarketLocationRef market_location_ref = 1;
 
-  // The logical Market Location (identity, jurisdiction, directions,
-  // resolution, etc.).
+  // The logica Market Location (display name, supported
+  // directions, time resolution, and user-defined metadata).
   MarketLocation market_location = 2;
 
   // Monotonically increasing revision counter.
@@ -1357,6 +1364,7 @@ message MarketLocationSamplesStreamFilter {
 //     {
 //       "market_location_ref": {
 //         "enterprise_id": 42,
+//         "market_area": "MARKET_AREA_EU_DE",
 //         "market_location_id": {
 //           "value": "DE01234567890",
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
@@ -1364,7 +1372,6 @@ message MarketLocationSamplesStreamFilter {
 //       },
 //       "market_location": {
 //         "display_name": "Main Office – Consumption",
-//         "market_area": "MARKET_AREA_DE",
 //         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
 //         "time_resolution": "TIME_RESOLUTION_15_MIN",
 //         "payload": {
@@ -1398,6 +1405,7 @@ message CreateMarketLocationRequest {
 //       "market_location": {
 //         "market_location_ref": {
 //           "enterprise_id": 42,
+//           "market_area": "MARKET_AREA_EU_DE",
 //           "market_location_id": {
 //             "value": "DE01234567890",
 //             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
@@ -1405,7 +1413,6 @@ message CreateMarketLocationRequest {
 //         },
 //         "market_location": {
 //           "display_name": "Main Office – Consumption",
-//           "market_area": "MARKET_AREA_DE",
 //           "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
 //           "time_resolution": "TIME_RESOLUTION_15_MIN",
 //           "payload": {
@@ -1459,13 +1466,6 @@ message UpdateMarketLocationRequest {
   //             PT15M).
   //           - Resolution changes apply only to future samples; historical
   //             samples retain their original resolution.
-  //
-  //     The following fields are immutable and MUST NOT appear in
-  //     update_mask:
-  //
-  //       • enterprise_id
-  //       • market_location_id
-  //       • market_area
   //
   message MarketLocationUpdate {
     // Optional human-readable name for organizational or UI use.
@@ -1535,14 +1535,16 @@ message UpdateMarketLocationRequest {
 //     {
 //       "enterprise_id": 42,
 //       "market_location_detail": {
-//         "market_location": {
+//         "market_location_ref": {
 //           "enterprise_id": 42,
+//           "market_area": "MARKET_AREA_EU_DE",
 //           "market_location_id": {
 //             "value": "DE01234567890",
 //             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
-//           },
+//           }
+//         },
+//         "market_location": {
 //           "display_name": "Main Office – Updated",
-//           "market_area": "MARKET_AREA_DE",
 //           "supported_directions": [
 //             "ENERGY_FLOW_DIRECTION_IMPORT",
 //             "ENERGY_FLOW_DIRECTION_EXPORT"
@@ -1695,6 +1697,7 @@ message ListMarketLocationsRequest {
 //           "market_location": {
 //             "market_location_ref": {
 //               "enterprise_id": 42,
+//               "market_area": "MARKET_AREA_EU_DE",
 //               "market_location_id": {
 //                 "value": "DE01234567890",
 //                 "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
@@ -1702,7 +1705,6 @@ message ListMarketLocationsRequest {
 //             },
 //             "market_location": {
 //               "display_name": "Main Office - Consumption",
-//               "market_area": "MARKET_AREA_DE",
 //               "supported_directions": [
 //                 "ENERGY_FLOW_DIRECTION_IMPORT"
 //               ],
