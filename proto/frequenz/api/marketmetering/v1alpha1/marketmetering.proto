@@ -946,11 +946,11 @@ message MarketLocation {
 //     {
 //       "market_location_ref": {
 //         "enterprise_id": 42,
+//         "market_area": "MARKET_AREA_EU_DE",
 //         "market_location_id": {
 //           "value": "DE01234567890",
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
-//         },
-//         "market_area": "MARKET_AREA_EU_DE"
+//         }
 //       },
 //       "market_location": {
 //         "display_name": "Main Office – Consumption",
@@ -968,7 +968,7 @@ message MarketLocationDetail {
   // Official market identifier for this Market Location
   MarketLocationRef market_location_ref = 1;
 
-  // The logica Market Location (display name, supported
+  // The logical Market Location (display name, supported
   // directions, time resolution, and user-defined metadata).
   MarketLocation market_location = 2;
 
@@ -2061,4 +2061,3 @@ message ReceiveMarketLocationSamplesStreamResponse {
   // List of market location metering time series included in this fragment.
   repeated MarketLocationSeries series = 2;
 }
-
