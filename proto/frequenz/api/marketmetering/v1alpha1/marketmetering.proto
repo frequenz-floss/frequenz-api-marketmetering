@@ -851,24 +851,36 @@ message MarketLocationIdValue {
   string value = 1;
 }
 
+// Identifies a Market Location within the clients enterprise scope.
+//
+// This selector does not contain an enterprise_id. The target enterprise
+// is derived from the client's authorized enterprise scope.
+//
+message MarketLocationSelector {
+  // Regulatory jurisdiction in which this Market Location is registered.
+  MarketArea market_area = 1;
+
+  // Official market identifier (MaLo-ID, MPAN, ESI-ID, ...).
+  MarketLocationId market_location_id = 2;
+}
+
 // Identifies a Market Location within a specific enterprise and market area.
 //
-// This tuple is globally unique across all tenants.
+// This tuple is globally unique across all tenants and combines the owning
+// enterprise with the Market Location selector.
 //
 // !!! important "Immutability"
 //     All fields of `MarketLocationRef` are immutable once a Market Location
 //     has been created. They form the stable, external key used in every RPC
 //     that references a Market Location (create, update, activate, deactivate,
 //     ingest, stream).
+//
 message MarketLocationRef {
-  // Unique enterprise id for this Market Location.
+  // Enterprise id the Market Location belongs to.
   uint64 enterprise_id = 1;
 
-  // Regulatory jurisdiction in which this Market Location is registered.
-  MarketArea market_area = 2;
-
-  // Market-wide identifier (MaLo, MPAN, ESI-ID, NMI, …).
-  MarketLocationId market_location_id = 3;
+  // Market Location identity within the enterprise.
+  MarketLocationSelector selector = 2;
 }
 
 // Represents a logical Market Location used in regulated electricity markets.
@@ -1141,7 +1153,7 @@ message MarketLocationSampleDetail {
 
 // Represents a semantic time series for a single logical Market Location.
 message MarketLocationSeries {
-  // The enterprise and Market Location to which this sample belongs.
+  // The market location to which this sample belongs.
   MarketLocationRef market_location_ref = 1;
 
   // Energy-flow direction of this series (IMPORT or EXPORT).
@@ -1353,26 +1365,30 @@ message MarketLocationSamplesStreamFilter {
   TimeFilter time_filter = 3;
 }
 
-// Creates a new Market Location within an Enterprise.
+// Creates a new Market Location within the clients authorized enterprise scope.
 //
 // A Market Location represents a contract-level metering point identifier used
-// in regulated electricity markets (e.g., MaLo in DE, MPAN in UK, ESI-ID in US,
-// NMI in AU). This RPC registers such a Market Location with the platform.
+// in regulated electricity markets (e.g., MaLo in Germany, MPAN in the UK,
+// ESI-ID in the US, or NMI in Australia). This RPC registers such a Market
+// Location with the platform.
 //
 // !!! example "Example Request"
 //     ```json
 //     {
-//       "market_location_ref": {
-//         "enterprise_id": 42,
+//       "market_location_selector": {
 //         "market_area": "MARKET_AREA_EU_DE",
 //         "market_location_id": {
-//           "value": "DE01234567890",
+//           "id": {
+//             "value": "DE01234567890"
+//           },
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
 //         }
 //       },
 //       "market_location": {
 //         "display_name": "Main Office – Consumption",
-//         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
+//         "supported_directions": [
+//           "ENERGY_FLOW_DIRECTION_IMPORT"
+//         ],
 //         "time_resolution": "TIME_RESOLUTION_15_MIN",
 //         "payload": {
 //           "siteCode": "HQ-North",
@@ -1383,14 +1399,20 @@ message MarketLocationSamplesStreamFilter {
 //     ```
 //
 message CreateMarketLocationRequest {
-  // Identifies the target enterprise and the Market Location ID to create.
-  MarketLocationRef market_location_ref = 1;
+  // Identifies the Market Location within the client's authorized enterprise
+  // scope.
+  //
+  // !!! important
+  //     The combination of `market_area` and `market_location_id` must be
+  //     unique within the authorized enterprise scope.
+  MarketLocationSelector market_location_selector = 1;
 
   // Metadata describing the Market Location.
   //
-  // All fields except `payload` must be populated. The service performs
-  // validation and assigns revision numbers upon creation.
-  MarketLocation market_location = 2;
+  // All fields except `payload` must be populated. The service validates the
+  // provided configuration and assigns lifecycle metadata such as revisions
+  // and timestamps during creation.
+  MarketLocation market_location = 3;
 }
 
 // Response for creating a new Market Location.
@@ -1401,8 +1423,7 @@ message CreateMarketLocationRequest {
 // !!! example "Example Response"
 //     ```json
 //     {
-//       "enterprise_id": 42,
-//       "market_location": {
+//       "market_location_detail": {
 //         "market_location_ref": {
 //           "enterprise_id": 42,
 //           "market_area": "MARKET_AREA_EU_DE",
@@ -1428,11 +1449,8 @@ message CreateMarketLocationRequest {
 //     ```
 //
 message CreateMarketLocationResponse {
-  // Enterprise to which this Market Location belongs.
-  uint64 enterprise_id = 1;
-
   // Fully populated MarketLocationDetail after creation.
-  MarketLocationDetail market_location = 2;
+  MarketLocationDetail market_location_detail = 1;
 }
 
 // Updates metadata of an existing Market Location.
@@ -1444,6 +1462,7 @@ message CreateMarketLocationResponse {
 //
 // Updates always produce a new metadata revision. Historical revisions
 // remain retrievable when using revision_strategy = REVISION_STRATEGY_ALL.
+//
 message UpdateMarketLocationRequest {
   // Container for all mutable Market Location fields.
   //
@@ -1490,7 +1509,7 @@ message UpdateMarketLocationRequest {
   }
 
   // Identifies the Market Location being updated.
-  MarketLocationRef market_location_ref = 1;
+  MarketLocationSelector market_location_selector = 1;
 
   // The revision the caller expects to be the latest revision at the time this
   // update is applied.
@@ -1589,7 +1608,7 @@ message UpdateMarketLocationResponse {
 //
 message DeactivateMarketLocationRequest {
   // List of Market Locations to deactivate.
-  repeated MarketLocationRef market_location_refs = 1;
+  repeated MarketLocationSelector market_locations = 1;
 }
 
 // Response for batch deactivation of Market Locations.
@@ -1613,7 +1632,7 @@ message DeactivateMarketLocationResponse {
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
-  repeated MarketLocationRef market_location_refs = 1;
+  repeated MarketLocationSelector market_locations = 1;
 }
 
 // Response for batch activation of Market Locations.
@@ -1627,7 +1646,7 @@ message ActivateMarketLocationResponse {
   repeated MarketLocationOperationResult results = 1;
 }
 
-// Lists Market Locations belonging to an Enterprise, with optional filters.
+// Lists Market Locations with optional filters and revision-selection controls.
 //
 // !!! note "Pagination"
 //     Pagination is supported via `pagination_params`. The server may return
@@ -1637,7 +1656,6 @@ message ActivateMarketLocationResponse {
 // !!! example "Example Request: Filter by two Market Location IDs"
 //     ```json
 //     {
-//       "enterprise_id": 42,
 //       "filter": {
 //         "market_location_id_filters": [
 //           {
@@ -1665,22 +1683,19 @@ message ActivateMarketLocationResponse {
 //     ```
 //
 message ListMarketLocationsRequest {
-  // The enterprise for which Market Locations are listed.
-  uint64 enterprise_id = 1;
-
   // Optional filtering criteria for narrowing the result set.
-  MarketLocationsFilter filter = 2;
+  MarketLocationsFilter filter = 1;
 
   // Optional revision-selection filter controlling if latest, all or selected
   // revisions are returned.
   //
   // Additionally historical revisions can be filtered by changed
   // fields. If omitted the service only returns the latest revision.
-  MarketLocationRevisionSelection revision_selection = 3;
+  MarketLocationRevisionSelection revision_selection = 2;
 
   // Pagination parameters.
   frequenz.api.common.v1alpha8.pagination.PaginationParams
-      pagination_params = 4;
+      pagination_params = 3;
 }
 
 // Response message for listing Market Locations.
@@ -1693,7 +1708,6 @@ message ListMarketLocationsRequest {
 //     {
 //       "market_locations": [
 //         {
-//           "enterprise_id": 42,
 //           "market_location": {
 //             "market_location_ref": {
 //               "enterprise_id": 42,
@@ -1728,17 +1742,8 @@ message ListMarketLocationsRequest {
 //     ```
 //
 message ListMarketLocationsResponse {
-  // A single entry in a Market Location listing response.
-  message MarketLocationEntry {
-    // Enterprise to which this Market Location belongs.
-    uint64 enterprise_id = 1;
-
-    // Market Location details for this entry.
-    MarketLocationDetail market_location = 2;
-  }
-
   // The list of Market Locations belonging to the requesting client.
-  repeated MarketLocationEntry market_locations = 1;
+  repeated MarketLocationDetail market_locations = 1;
 
   // Pagination metadata including next_page_token.
   frequenz.api.common.v1alpha8.pagination.PaginationInfo pagination_info = 2;
@@ -1799,7 +1804,7 @@ message ListMarketLocationsResponse {
 //
 message UpsertMarketLocationSamplesStreamRequest {
   // Identifies the target Market Location.
-  MarketLocationRef market_location_ref = 1;
+  MarketLocationSelector market_location = 1;
 
   // Energy-flow direction (IMPORT or EXPORT).
   //
@@ -1941,8 +1946,8 @@ message UpsertMarketLocationSamplesStreamResponse {
 //     ```
 //
 message ReceiveMarketLocationSamplesStreamRequest {
-  // A list of Market Location.
-  repeated MarketLocationRef market_location_refs = 1;
+  // A list of Market Location`s to receive samples for.
+  repeated MarketLocationSelector market_locations = 1;
 
   // Energy-flow directions requested (e.g., IMPORT and/or EXPORT).
   //
