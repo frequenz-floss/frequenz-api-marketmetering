@@ -11,7 +11,7 @@ Frequenz gRPC API to retrieve data from regulated market metering points.
 ## API Overview
 
 The API is defined in a single proto file:
-[`marketmetering.proto`](proto/frequenz/api/marketmetering/v1alpha1/marketmetering.proto)
+[`marketmetering.proto`](https://github.com/frequenz-floss/frequenz-api-marketmetering/blob/v0.x.x/proto/frequenz/api/marketmetering/v1alpha1/marketmetering.proto)
 
 ### Service: `MarketMeteringService`
 
