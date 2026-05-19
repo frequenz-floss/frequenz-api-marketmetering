@@ -2,24 +2,31 @@
 
 ## Summary
 
-This release moves `market_area` from `MarketLocation` to `MarketLocationRef`,
-making the jurisdiction an explicit part of the immutable identity of a Market
-Location. It also extends `MarketLocationIdType` and refines documentation of
-the `MarketLocationId` message.
+This release refines enterprise scoping semantics for Market Location
+operations.
+
+Enterprise ownership is now consistently derived from the caller's
+authentication context for create and update operations. To support this,
+the release introduces `MarketLocationSelector` as an enterprise-scoped
+identifier while keeping `MarketLocationRef` as the globally unique resolved
+reference.
 
 ## Upgrading
 
-- `market_area` has been moved from `MarketLocation` to `MarketLocationRef`.
-  Set and read it there in all RPCs.
-- Remove misleading documentation
-- Added echoing direction, metric_type and metric_unit when inserting samples
-- Reworked streaming response for upserting market locations and samples.
-- Remove bool success in favour of just checking if error is unset
+- Added `MarketLocationSelector` for enterprise-scoped Market Location
+  identification.
+- `CreateMarketLocationRequest` now uses
+  `market_location_selector`.
+- `UpdateMarketLocationRequest` now identifies Market Locations using
+  `MarketLocationSelector` instead of `MarketLocationRef`.
+- Create and update operations no longer require clients to explicitly provide
+  an `enterprise_id`.
+- Enterprise ownership is now derived from the clients's authentication context.
 
 ## New Features
 
+- Added `MarketLocationSelector`.
 
 ## Bug Fixes
 
-- Fix docs: Remove market_area from example list for updating the revision.
-<!-- Here goes notable bug fixes that are worth a special mention or explanation -->
+- Refined documentation around enterprise scoping and Market Location identit
