@@ -932,17 +932,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#listmarketlocationsresponsemarketlocationentry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ListMarketLocationsResponse.MarketLocationEntry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#marketlocation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1057,6 +1046,17 @@
     <span class="md-ellipsis">
       
         MarketLocationSamplesStreamFilter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#marketlocationselector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationSelector
       
     </span>
   </a>
@@ -1982,17 +1982,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#listmarketlocationsresponsemarketlocationentry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ListMarketLocationsResponse.MarketLocationEntry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#marketlocation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2107,6 +2096,17 @@
     <span class="md-ellipsis">
       
         MarketLocationSamplesStreamFilter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#marketlocationselector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MarketLocationSelector
       
     </span>
   </a>
@@ -2461,7 +2461,6 @@
 <li><a href="#frequenz-api-marketmetering-v1alpha1-DeactivateMarketLocationResponse">DeactivateMarketLocationResponse</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ListMarketLocationsRequest">ListMarketLocationsRequest</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ListMarketLocationsResponse">ListMarketLocationsResponse</a></li>
-<li><a href="#frequenz-api-marketmetering-v1alpha1-ListMarketLocationsResponse-MarketLocationEntry">ListMarketLocationsResponse.MarketLocationEntry</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocation">MarketLocation</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationDetail">MarketLocationDetail</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationId">MarketLocationId</a></li>
@@ -2473,6 +2472,7 @@
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSample">MarketLocationSample</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSampleDetail">MarketLocationSampleDetail</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSamplesStreamFilter">MarketLocationSamplesStreamFilter</a></li>
+<li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSeries">MarketLocationSeries</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationsFilter">MarketLocationsFilter</a></li>
 <li><a href="#frequenz-api-marketmetering-v1alpha1-ReceiveMarketLocationSamplesStreamRequest">ReceiveMarketLocationSamplesStreamRequest</a></li>
@@ -2535,8 +2535,8 @@ Historical samples, revisions, and metadata remain unchanged.</p>
 </thead>
 <tbody>
 <tr>
-<td>market_location_refs</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_locations</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td>repeated</td>
 <td>List of Market Locations to activate.</td>
 </tr>
@@ -2568,30 +2568,34 @@ implement automated handling and retries.</p>
 </table>
 <p><a name="frequenz-api-marketmetering-v1alpha1-CreateMarketLocationRequest"></a></p>
 <h3 id="createmarketlocationrequest">CreateMarketLocationRequest<a class="headerlink" href="#createmarketlocationrequest" title="Permanent link">¤</a></h3>
-<p>Creates a new Market Location within an Enterprise.</p>
+<p>Creates a new Market Location within the clients authorized enterprise scope.</p>
 <p>A Market Location represents a contract-level metering point identifier used
-in regulated electricity markets (e.g., MaLo in DE, MPAN in UK, ESI-ID in US,
-NMI in AU). This RPC registers such a Market Location with the platform.</p>
+in regulated electricity markets (e.g., MaLo in Germany, MPAN in the UK,
+ESI-ID in the US, or NMI in Australia). This RPC registers such a Market
+Location with the platform.</p>
 <p>!!! example &#34;Example Request&#34;
     <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_re</span><span class="kc">f</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="err">–</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">],</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;si</span><span class="kc">te</span><span class="err">Code&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;HQ</span><span class="mi">-</span><span class="err">Nor</span><span class="kc">t</span><span class="err">h&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;comme</span><span class="kc">nt</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Primary</span><span class="w"> </span><span class="err">billi</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">me</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="p">}</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_selec</span><span class="kc">t</span><span class="err">or&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="err">–</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="p">],</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;si</span><span class="kc">te</span><span class="err">Code&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;HQ</span><span class="mi">-</span><span class="err">Nor</span><span class="kc">t</span><span class="err">h&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;comme</span><span class="kc">nt</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Primary</span><span class="w"> </span><span class="err">billi</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">me</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <table>
 <thead>
@@ -2604,20 +2608,16 @@ NMI in AU). This RPC registers such a Market Location with the platform.</p>
 </thead>
 <tbody>
 <tr>
-<td>market_location_ref</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_location_selector</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td></td>
-<td>Identifies the target enterprise and the Market Location ID to create.</td>
-</tr>
-<tr>
-<td>market_location</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocation">MarketLocation</a></td>
-<td></td>
-<td>Metadata describing the Market Location.</td>
+<td>Identifies the Market Location within the client&#39;s authorized enterprise scope.</td>
 </tr>
 </tbody>
 </table>
-<p>All fields except <code>payload</code> must be populated. The service performs validation and assigns revision numbers upon creation. |</p>
+<p>!!! important The combination of <code>market_area</code> and <code>market_location_id</code> must be unique within the authorized enterprise scope. |
+| market_location | <a href="#frequenz-api-marketmetering-v1alpha1-MarketLocation">MarketLocation</a> |  | Metadata describing the Market Location.</p>
+<p>All fields except <code>payload</code> must be populated. The service validates the provided configuration and assigns lifecycle metadata such as revisions and timestamps during creation. |</p>
 <p><a name="frequenz-api-marketmetering-v1alpha1-CreateMarketLocationResponse"></a></p>
 <h3 id="createmarketlocationresponse">CreateMarketLocationResponse<a class="headerlink" href="#createmarketlocationresponse" title="Permanent link">¤</a></h3>
 <p>Response for creating a new Market Location.</p>
@@ -2625,30 +2625,29 @@ NMI in AU). This RPC registers such a Market Location with the platform.</p>
 information and activation status.</p>
 <p>!!! example &#34;Example Response&#34;
     <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_re</span><span class="kc">f</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="err">–</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">],</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;si</span><span class="kc">te</span><span class="err">Code&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;HQ</span><span class="mi">-</span><span class="err">Nor</span><span class="kc">t</span><span class="err">h&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;is_ac</span><span class="kc">t</span><span class="err">ive&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;crea</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;upda</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="p">}</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_de</span><span class="kc">ta</span><span class="err">il&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_re</span><span class="kc">f</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="err">–</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">],</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;si</span><span class="kc">te</span><span class="err">Code&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;HQ</span><span class="mi">-</span><span class="err">Nor</span><span class="kc">t</span><span class="err">h&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;is_ac</span><span class="kc">t</span><span class="err">ive&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;crea</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;upda</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <table>
 <thead>
@@ -2661,13 +2660,7 @@ information and activation status.</p>
 </thead>
 <tbody>
 <tr>
-<td>enterprise_id</td>
-<td><a href="#uint64">uint64</a></td>
-<td></td>
-<td>Enterprise to which this Market Location belongs.</td>
-</tr>
-<tr>
-<td>market_location</td>
+<td>market_location_detail</td>
 <td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationDetail">MarketLocationDetail</a></td>
 <td></td>
 <td>Fully populated MarketLocationDetail after creation.</td>
@@ -2696,8 +2689,8 @@ when they are no longer active.</p>
 </thead>
 <tbody>
 <tr>
-<td>market_location_refs</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_locations</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td>repeated</td>
 <td>List of Market Locations to deactivate.</td>
 </tr>
@@ -2730,38 +2723,37 @@ request and reports whether the operation succeeded, failed, or was skipped
 </table>
 <p><a name="frequenz-api-marketmetering-v1alpha1-ListMarketLocationsRequest"></a></p>
 <h3 id="listmarketlocationsrequest">ListMarketLocationsRequest<a class="headerlink" href="#listmarketlocationsrequest" title="Permanent link">¤</a></h3>
-<p>Lists Market Locations belonging to an Enterprise, with optional filters.</p>
+<p>Lists Market Locations with optional filters and revision-selection controls.</p>
 <p>!!! note &#34;Pagination&#34;
     Pagination is supported via <code>pagination_params</code>. The server may return
     fewer results than requested. Use the returned <code>pagination_info</code> to
     continue paging, or stop when <code>next_page_token</code> is empty.</p>
 <p>!!! example &#34;Example Request: Filter by two Market Location IDs&#34;
     <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">f</span><span class="err">il</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id_</span><span class="kc">f</span><span class="err">il</span><span class="kc">ters</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span><span class="p">{</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="p">},</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">      </span><span class="p">{</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">09876543210</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="p">],</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ac</span><span class="kc">t</span><span class="err">iva</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_</span><span class="kc">f</span><span class="err">il</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ACTIVATION_FILTER_ONLY_ACTIVE&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">_selec</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">_s</span><span class="kc">trate</span><span class="err">gy&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;REVISION_STRATEGY_ALL&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;cha</span><span class="kc">n</span><span class="err">ged_</span><span class="kc">f</span><span class="err">ields&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="p">]</span>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;pagi</span><span class="kc">nat</span><span class="err">io</span><span class="kc">n</span><span class="err">_params&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;page_size&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="p">}</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">f</span><span class="err">il</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id_</span><span class="kc">f</span><span class="err">il</span><span class="kc">ters</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">09876543210</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p">],</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ac</span><span class="kc">t</span><span class="err">iva</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_</span><span class="kc">f</span><span class="err">il</span><span class="kc">ter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ACTIVATION_FILTER_ONLY_ACTIVE&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">_selec</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">_s</span><span class="kc">trate</span><span class="err">gy&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;REVISION_STRATEGY_ALL&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;cha</span><span class="kc">n</span><span class="err">ged_</span><span class="kc">f</span><span class="err">ields&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_CHANGED_FIELD_SUPPORTED_DIRECTIONS&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_CHANGED_FIELD_TIME_RESOLUTION&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;pagi</span><span class="kc">nat</span><span class="err">io</span><span class="kc">n</span><span class="err">_params&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;page_size&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <table>
 <thead>
@@ -2773,12 +2765,6 @@ request and reports whether the operation succeeded, failed, or was skipped
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>enterprise_id</td>
-<td><a href="#uint64">uint64</a></td>
-<td></td>
-<td>The enterprise for which Market Locations are listed.</td>
-</tr>
 <tr>
 <td>filter</td>
 <td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationsFilter">MarketLocationsFilter</a></td>
@@ -2804,38 +2790,37 @@ logical Market Location (identity) and revision metadata.</p>
     <div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_re</span><span class="kc">f</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">          </span><span class="p">}</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">          </span><span class="p">],</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;buildi</span><span class="kc">n</span><span class="err">g_</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;o</span><span class="kc">ff</span><span class="err">ice&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;cos</span><span class="kc">t</span><span class="err">_ce</span><span class="kc">nter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;A</span><span class="mi">-17</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">          </span><span class="p">}</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;is_ac</span><span class="kc">t</span><span class="err">ive&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;crea</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;upda</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-15</span><span class="err">T</span><span class="mi">12</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">56</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;pagi</span><span class="kc">nat</span><span class="err">io</span><span class="kc">n</span><span class="err">_i</span><span class="kc">nf</span><span class="err">o&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">ne</span><span class="err">x</span><span class="kc">t</span><span class="err">_page_</span><span class="kc">t</span><span class="err">oke</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;&amp;#</span><span class="mi">34</span><span class="err">;</span>
-</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="p">}</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_re</span><span class="kc">f</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;e</span><span class="kc">nter</span><span class="err">prise_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_area&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_AREA_EU_DE&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">_id&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;value&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;DE</span><span class="mi">01234567890</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;MARKET_LOCATION_ID_TYPE_MALO_ID&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">          </span><span class="p">}</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;marke</span><span class="kc">t</span><span class="err">_loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;display_</span><span class="kc">na</span><span class="err">me&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;Mai</span><span class="kc">n</span><span class="w"> </span><span class="err">O</span><span class="kc">ff</span><span class="err">ice</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">Co</span><span class="kc">nsu</span><span class="err">mp</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;suppor</span><span class="kc">te</span><span class="err">d_direc</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;ENERGY_FLOW_DIRECTION_IMPORT&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">          </span><span class="p">],</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">t</span><span class="err">ime_resolu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;TIME_RESOLUTION_</span><span class="mi">15</span><span class="err">_MIN&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">          </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;payload&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;buildi</span><span class="kc">n</span><span class="err">g_</span><span class="kc">t</span><span class="err">ype&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;o</span><span class="kc">ff</span><span class="err">ice&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">            </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;cos</span><span class="kc">t</span><span class="err">_ce</span><span class="kc">nter</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;A</span><span class="mi">-17</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">          </span><span class="p">}</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;revisio</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;is_ac</span><span class="kc">t</span><span class="err">ive&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;crea</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-01</span><span class="err">T</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">,</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">        </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;upda</span><span class="kc">te</span><span class="err">_</span><span class="kc">t</span><span class="err">ime&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="mi">2025-01-15</span><span class="err">T</span><span class="mi">12</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">56</span><span class="err">Z&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">  </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;pagi</span><span class="kc">nat</span><span class="err">io</span><span class="kc">n</span><span class="err">_i</span><span class="kc">nf</span><span class="err">o&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">    </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="kc">ne</span><span class="err">x</span><span class="kc">t</span><span class="err">_page_</span><span class="kc">t</span><span class="err">oke</span><span class="kc">n</span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;</span><span class="p">:</span><span class="w"> </span><span class="err">&amp;#</span><span class="mi">34</span><span class="err">;&amp;#</span><span class="mi">34</span><span class="err">;</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <table>
 <thead>
@@ -2849,7 +2834,7 @@ logical Market Location (identity) and revision metadata.</p>
 <tbody>
 <tr>
 <td>market_locations</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-ListMarketLocationsResponse-MarketLocationEntry">ListMarketLocationsResponse.MarketLocationEntry</a></td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationDetail">MarketLocationDetail</a></td>
 <td>repeated</td>
 <td>The list of Market Locations belonging to the requesting client.</td>
 </tr>
@@ -2858,33 +2843,6 @@ logical Market Location (identity) and revision metadata.</p>
 <td><a href="#frequenz-api-common-v1alpha8-pagination-PaginationInfo">frequenz.api.common.v1alpha8.pagination.PaginationInfo</a></td>
 <td></td>
 <td>Pagination metadata including next_page_token.</td>
-</tr>
-</tbody>
-</table>
-<p><a name="frequenz-api-marketmetering-v1alpha1-ListMarketLocationsResponse-MarketLocationEntry"></a></p>
-<h3 id="listmarketlocationsresponsemarketlocationentry">ListMarketLocationsResponse.MarketLocationEntry<a class="headerlink" href="#listmarketlocationsresponsemarketlocationentry" title="Permanent link">¤</a></h3>
-<p>A single entry in a Market Location listing response.</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Label</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>enterprise_id</td>
-<td><a href="#uint64">uint64</a></td>
-<td></td>
-<td>Enterprise to which this Market Location belongs.</td>
-</tr>
-<tr>
-<td>market_location</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationDetail">MarketLocationDetail</a></td>
-<td></td>
-<td>Market Location details for this entry.</td>
 </tr>
 </tbody>
 </table>
@@ -3164,7 +3122,8 @@ The presence of <code>error</code> determines whether the operation was applied:
 <p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationRef"></a></p>
 <h3 id="marketlocationref">MarketLocationRef<a class="headerlink" href="#marketlocationref" title="Permanent link">¤</a></h3>
 <p>Identifies a Market Location within a specific enterprise and market area.</p>
-<p>This tuple is globally unique across all tenants.</p>
+<p>This tuple is globally unique across all tenants and combines the owning
+enterprise with the Market Location selector.</p>
 <p>!!! important &#34;Immutability&#34;
     All fields of <code>MarketLocationRef</code> are immutable once a Market Location
     has been created. They form the stable, external key used in every RPC
@@ -3184,19 +3143,13 @@ The presence of <code>error</code> determines whether the operation was applied:
 <td>enterprise_id</td>
 <td><a href="#uint64">uint64</a></td>
 <td></td>
-<td>Unique enterprise id for this Market Location.</td>
+<td>Enterprise id the Market Location belongs to.</td>
 </tr>
 <tr>
-<td>market_area</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketArea">MarketArea</a></td>
+<td>selector</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td></td>
-<td>Regulatory jurisdiction in which this Market Location is registered.</td>
-</tr>
-<tr>
-<td>market_location_id</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationId">MarketLocationId</a></td>
-<td></td>
-<td>Market-wide identifier (MaLo, MPAN, ESI-ID, NMI, …).</td>
+<td>Market Location identity within the enterprise.</td>
 </tr>
 </tbody>
 </table>
@@ -3328,6 +3281,35 @@ Locations, directions, and metric types in this request.</p>
 <p>Semantics: • If <code>end_time</code> is provided, it MUST be ≤ the current server time. The server streams all samples t where start_time ≤ t &lt; end_time and then closes the stream.</p>
 <p>• If <code>end_time</code> is omitted, the server streams all historical samples t ≥ start_time (if provided) and then continues streaming new samples in real time. The stream remains open indefinitely.</p>
 <p>• If <code>start_time</code> is omitted: – and <code>end_time</code> is omitted: the stream produces no historical data and begins streaming real-time samples only. – and <code>end_time</code> is provided: the historical window is empty and the stream closes immediately. |</p>
+<p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationSelector"></a></p>
+<h3 id="marketlocationselector">MarketLocationSelector<a class="headerlink" href="#marketlocationselector" title="Permanent link">¤</a></h3>
+<p>Identifies a Market Location within the clients enterprise scope.</p>
+<p>This selector does not contain an enterprise_id. The target enterprise
+is derived from the client&#39;s authorized enterprise scope.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>market_area</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketArea">MarketArea</a></td>
+<td></td>
+<td>Regulatory jurisdiction in which this Market Location is registered.</td>
+</tr>
+<tr>
+<td>market_location_id</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationId">MarketLocationId</a></td>
+<td></td>
+<td>Official market identifier (MaLo-ID, MPAN, ESI-ID, ...).</td>
+</tr>
+</tbody>
+</table>
 <p><a name="frequenz-api-marketmetering-v1alpha1-MarketLocationSeries"></a></p>
 <h3 id="marketlocationseries">MarketLocationSeries<a class="headerlink" href="#marketlocationseries" title="Permanent link">¤</a></h3>
 <p>Represents a semantic time series for a single logical Market Location.</p>
@@ -3345,7 +3327,7 @@ Locations, directions, and metric types in this request.</p>
 <td>market_location_ref</td>
 <td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
 <td></td>
-<td>The enterprise and Market Location to which this sample belongs.</td>
+<td>The market location to which this sample belongs.</td>
 </tr>
 <tr>
 <td>direction</td>
@@ -3485,10 +3467,10 @@ streamed response.
 </thead>
 <tbody>
 <tr>
-<td>market_location_refs</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_locations</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td>repeated</td>
-<td>A list of Market Location.</td>
+<td>A list of Market Location`s to receive samples for.</td>
 </tr>
 <tr>
 <td>directions</td>
@@ -3787,8 +3769,8 @@ remain retrievable when using revision_strategy = REVISION_STRATEGY_ALL.</p>
 </thead>
 <tbody>
 <tr>
-<td>market_location_ref</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_location_selector</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td></td>
 <td>Identifies the Market Location being updated.</td>
 </tr>
@@ -3982,8 +3964,8 @@ clock and may also reject samples that are too far in the past.
 </thead>
 <tbody>
 <tr>
-<td>market_location_ref</td>
-<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationRef">MarketLocationRef</a></td>
+<td>market_location</td>
+<td><a href="#frequenz-api-marketmetering-v1alpha1-MarketLocationSelector">MarketLocationSelector</a></td>
 <td></td>
 <td>Identifies the target Market Location.</td>
 </tr>
