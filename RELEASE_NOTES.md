@@ -2,31 +2,16 @@
 
 ## Summary
 
-This release refines enterprise scoping semantics for Market Location
-operations.
-
-Enterprise ownership is now consistently derived from the caller's
-authentication context for create and update operations. To support this,
-the release introduces `MarketLocationSelector` as an enterprise-scoped
-identifier while keeping `MarketLocationRef` as the globally unique resolved
-reference.
+This release moves commonly shared definitions to the Frequenz Common API 
+repository.
 
 ## Upgrading
 
-- Added `MarketLocationSelector` for enterprise-scoped Market Location
-  identification.
-- `CreateMarketLocationRequest` now uses
-  `market_location_selector`.
-- `UpdateMarketLocationRequest` now identifies Market Locations using
-  `MarketLocationSelector` instead of `MarketLocationRef`.
-- Create and update operations no longer require clients to explicitly provide
-  an `enterprise_id`.
-- Enterprise ownership is now derived from the clients's authentication context.
+- Moved `MarketLocationIdType`, `MarketLocationIdValue`, `MarketLocationId` and 
+  `MarketLocationSelector` to "frequenz/api/common/v1alpha8/market/market_location.proto"
+- Moved `MarketArea` to "frequenz/api/common/v1alpha8/market/market_area.proto"
 
 ## New Features
 
-- Added `MarketLocationSelector`.
-
 ## Bug Fixes
 
-- Refined documentation around enterprise scoping and Market Location identit
