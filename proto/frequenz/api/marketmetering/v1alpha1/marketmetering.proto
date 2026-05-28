@@ -10,7 +10,7 @@ syntax = "proto3";
 
 package frequenz.api.marketmetering.v1alpha1;
 
-import "frequenz/api/common/v1alpha8/market/market_location.proto";
+import "frequenz/api/common/v1alpha8/grid/market_location.proto";
 import "frequenz/api/common/v1alpha8/pagination/pagination_info.proto";
 import "frequenz/api/common/v1alpha8/pagination/pagination_params.proto";
 import "frequenz/api/common/v1alpha8/types/interval.proto";
