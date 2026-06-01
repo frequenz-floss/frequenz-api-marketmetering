@@ -10,6 +10,7 @@ syntax = "proto3";
 
 package frequenz.api.marketmetering.v1alpha1;
 
+import "frequenz/api/common/v1alpha8/grid/market_location.proto";
 import "frequenz/api/common/v1alpha8/pagination/pagination_info.proto";
 import "frequenz/api/common/v1alpha8/pagination/pagination_params.proto";
 import "frequenz/api/common/v1alpha8/types/interval.proto";
@@ -206,177 +207,6 @@ service MarketMeteringService {
   rpc ReceiveMarketLocationSamplesStream
       (ReceiveMarketLocationSamplesStreamRequest)
       returns (stream ReceiveMarketLocationSamplesStreamResponse);
-}
-
-// Defines the jurisdiction in which a Market Location is registered.
-//
-// A Market Area represents the regulatory jurisdiction and market regime that
-// governs identifier formats, settlement periods, and metering conventions
-// for a Market Location.
-//
-// Identifier formats (MaLo-ID, MPAN, POD, NMI, ESI-ID, …) are modeled
-// separately in MarketLocationIdType.
-//
-// !!! note "Jurisdictions, not operators"
-//     Market areas represent regulatory regimes, not individual exchanges or
-//     TSOs. Where operator-specific behavior matters (e.g. ERCOT vs PJM),
-//     dedicated sub-areas are defined.
-//
-// !!! note "Numeric ranges"
-//     Enum values are grouped by region to preserve ordering, readability,
-//     and backwards-compatible extension.
-//
-enum MarketArea {
-  // UNSPECIFIED: Default unspecified value — must not be used.
-  MARKET_AREA_UNSPECIFIED = 0;
-
-  // ---------------------------------------------------------------------------
-  // Europe [100..199]
-  // ---------------------------------------------------------------------------
-
-  // EU_DE: Germany — MaLo-ID regime (Marktlokation / MaLo-ID).
-  MARKET_AREA_EU_DE = 101;
-
-  // EU_UK: United Kingdom — MPAN regime (Meter Point Administration Number).
-  MARKET_AREA_EU_UK = 102;
-
-  // EU_FR: France — PDL/PRM regime (Point de Livraison/Référence Mesure).
-  MARKET_AREA_EU_FR = 103;
-
-  // EU_IT: Italy — POD regime (Point of Delivery).
-  MARKET_AREA_EU_IT = 104;
-
-  // EU_ES: Spain — CUPS regime (Código Universal de Punto de Suministro).
-  MARKET_AREA_EU_ES = 105;
-
-  // EU_NL: Netherlands — EAN regime (European Article Number).
-  MARKET_AREA_EU_NL = 106;
-
-  // EU_BE: Belgium — EAN regime.
-  MARKET_AREA_EU_BE = 107;
-
-  // EU_CH: Switzerland — EAN regime.
-  MARKET_AREA_EU_CH = 108;
-
-  // EU_AT: Austria — Zählpunktnummer (EAN-based).
-  MARKET_AREA_EU_AT = 109;
-
-  // EU_NORDICS: Nordic region — Elhub / GSRN regime (NO, SE, DK, FI).
-  MARKET_AREA_EU_NORDICS = 110;
-
-  // ---------------------------------------------------------------------------
-  // Asia Pacific [200..299]
-  // ---------------------------------------------------------------------------
-
-  // AP_JP: Japan — country-specific metering / settlement regime.
-  MARKET_AREA_AP_JP = 201;
-
-  // AP_CN: China — country-specific metering / settlement regime.
-  MARKET_AREA_AP_CN = 202;
-
-  // AP_IN: India — country-specific metering / settlement regime.
-  MARKET_AREA_AP_IN = 203;
-
-  // AP_SG: Singapore — country-specific metering / settlement regime.
-  MARKET_AREA_AP_SG = 204;
-
-  // ---------------------------------------------------------------------------
-  // North America [300..399]
-  // ---------------------------------------------------------------------------
-
-  // NA_US_ERCOT: United States — ERCOT regime (ESI-ID).
-  MARKET_AREA_NA_US_ERCOT = 301;
-
-  // NA_US_PJM: United States — PJM regime (ESI-ID).
-  MARKET_AREA_NA_US_PJM = 302;
-
-  // NA_US_ISONE: United States — ISO New England regime (ESI-ID).
-  MARKET_AREA_NA_US_ISONE = 303;
-
-  // NA_US_CAISO: United States — CAISO regime (ESI-ID).
-  MARKET_AREA_NA_US_CAISO = 304;
-
-  // ---------------------------------------------------------------------------
-  // Eurasia [400..499]
-  // ---------------------------------------------------------------------------
-
-  // EURASIA_RU: Russia — country-specific metering / settlement regime.
-  MARKET_AREA_EURASIA_RU = 401;
-
-  // ---------------------------------------------------------------------------
-  // Oceania [500..599]
-  // ---------------------------------------------------------------------------
-
-  // OC_AU: Australia — NMI regime (National Metering Identifier).
-  MARKET_AREA_OC_AU = 501;
-
-  // OC_NZ: New Zealand — ICP regime (Installation Control Point).
-  MARKET_AREA_OC_NZ = 502;
-
-  // ---------------------------------------------------------------------------
-  // Other / not yet modelled [900..999]
-  // ---------------------------------------------------------------------------
-
-  // OTHER: Other or not yet modelled areas.
-  MARKET_AREA_OTHER = 999;
-}
-
-// Identifies the type of external market identifier used to reference
-// a Market Location in a specific regulatory regime.
-//
-// The identifier type defines the format, validation rules, and semantics
-// of the identifier value. Jurisdictional applicability is modeled separately
-// via MarketArea.
-//
-// !!! note "Identifier regimes, not countries"
-//     Some identifier types (e.g. EAN, ESI_ID) are used across multiple
-//     jurisdictions. This enum models identifier formats, not geography.
-//
-enum MarketLocationIdType {
-  // UNSPECIFIED: Default unspecified value — must not be used.
-  MARKET_LOCATION_ID_TYPE_UNSPECIFIED = 0;
-
-  // MALO_ID: Germany – Marktlokations-ID (MaLo-ID).
-  MARKET_LOCATION_ID_TYPE_MALO_ID = 1;
-
-  // ZAEHLPUNKT: Austria – Zählpunktbezeichnung (Semantically similar to
-  // Germany’s MaLo-ID).
-  MARKET_LOCATION_ID_TYPE_ZAEHLPUNKT = 2;
-
-  // MPAN: United Kingdom – Meter Point Administration Number.
-  MARKET_LOCATION_ID_TYPE_MPAN = 3;
-
-  // POD: Italy — Point of Delivery.
-  MARKET_LOCATION_ID_TYPE_POD = 4;
-
-  // CUPS: Spain — Código Universal de Punto de Suministro.
-  MARKET_LOCATION_ID_TYPE_CUPS = 5;
-
-  // PRM: France — Point de Référence et Mesure (PRM).
-  MARKET_LOCATION_ID_TYPE_PRM = 6;
-
-  // EAN: Continental Europe (e.g. FR (legacy), NL, BE, PL, CZ, HU, ...) —
-  // European Article Number.
-  MARKET_LOCATION_ID_TYPE_EAN = 7;
-
-  // GSRN: Nordic countries (e.g., DK, SE, NO, FI) — GS1 Global Service
-  // Relation Number.
-  MARKET_LOCATION_ID_TYPE_GSRN = 8;
-
-  // ESI_ID: United States – Electric Service Identifier.
-  MARKET_LOCATION_ID_TYPE_ESI_ID = 9;
-
-  // NMI: Australia – National Metering Identifier.
-  MARKET_LOCATION_ID_TYPE_NMI = 10;
-
-  // ICP: New Zealand — Installation Control Point.
-  MARKET_LOCATION_ID_TYPE_ICP = 11;
-
-  // SPN: Japan — Supply Point Number (需要地点特定番号).
-  MARKET_LOCATION_ID_TYPE_SPN = 12;
-
-  // OTHER: Generic meter identifier for markets not modeled explicitly yet.
-  MARKET_LOCATION_ID_TYPE_OTHER = 99;
 }
 
 // Indicates which fields of a Market Location changed in this revision.
@@ -789,81 +619,6 @@ message ResamplingOptions {
   DownsamplingMethod downsampling_method = 2;
 }
 
-// Market-standard identifier describing a Market Location.
-//
-// A Market Location is a jurisdiction-specific point of metering used for
-// regulatory processes such as settlement, billing, supplier switching,
-// balancing-group reconciliation, and DSO/TSO reporting. Different markets
-// use incompatible identifier formats—varying in length, character sets,
-// checksum rules, and decomposition.
-//
-// This message encapsulates the official, market-issued identifier used to
-// reference such a point. Examples:
-//   • Germany:  MaLo-ID (Marktlokations-ID)
-//   • UK:       MPAN (Meter Point Administration Number)
-//   • US:       ESI-ID (Electric Service Identifier)
-//   • Australia NMI (National Metering Identifier)
-//
-// Different markets use incompatible identifier formats—varying in length,
-// character sets, checksum rules, and presentation formatting (spaces,
-// hyphens, prefixes).
-//
-// !!! example "Example values for different markets"
-//     The following examples illustrate how the fields may be populated for
-//     different jurisdictions:
-//
-//     | Market:Type     | Official ID         | Normalized Value
-//     | --------------- | ------------------- | -----------------------------
-//     | DE:MALO_ID      | "12345678901"     | "12345678901"
-//     | UK:MPAN         | "18 1066 1234 567 8901 234" | "18106612345678901234"
-//     | US_ERCOT:ESI_ID | "10443720000012345" | "10443720000012345"
-//     | AU:NMI          | "NEM12-03456-A"     | "NEM1203456A"
-//
-//     In each case, `value` preserves the original format as provided by the
-//     market operator, while `normalized_value` is an implementation-specific
-//     cleaned representation suitable for validation, indexing, and
-//     comparisons.
-//
-message MarketLocationId {
-  // Official market location identifier.
-  MarketLocationIdValue id = 1;
-
-  // Identifies what type of official market identifier `id` represents.
-  MarketLocationIdType type = 2;
-}
-
-// Opaque identifier in its original market format as received from the
-// source system (MSCONS, DataHub, CSV, manual entry, etc.).
-//
-// The service accepts both formatted and already-normalized values.
-// Formatting characters (spaces, hyphens, prefixes) are ignored during
-// validation. Validation is performed exclusively on a canonical
-// normalized form derived from the input value, based on the type.
-//
-// Clients MUST NOT rely on formatting differences to distinguish identifiers.
-//
-// Examples:
-//   - "01234567890" (Germany MaLo)
-//   - "18 1066 1234 567 8901 234" (UK MPAN with spaces)
-//   - "NEM12-03456-A" (AU NMI with hyphens)
-message MarketLocationIdValue {
-  // Official market location identifier.
-  string value = 1;
-}
-
-// Identifies a Market Location within the clients enterprise scope.
-//
-// This selector does not contain an enterprise_id. The target enterprise
-// is derived from the client's authorized enterprise scope.
-//
-message MarketLocationSelector {
-  // Regulatory jurisdiction in which this Market Location is registered.
-  MarketArea market_area = 1;
-
-  // Official market identifier (MaLo-ID, MPAN, ESI-ID, ...).
-  MarketLocationId market_location_id = 2;
-}
-
 // Identifies a Market Location within a specific enterprise and market area.
 //
 // This tuple is globally unique across all tenants and combines the owning
@@ -880,7 +635,7 @@ message MarketLocationRef {
   uint64 enterprise_id = 1;
 
   // Market Location identity within the enterprise.
-  MarketLocationSelector selector = 2;
+  frequenz.api.common.v1alpha8.grid.MarketLocationSelector selector = 2;
 }
 
 // Represents a logical Market Location used in regulated electricity markets.
@@ -1043,7 +798,8 @@ message MarketLocationDetail {
 //
 message MarketLocationsFilter {
   // Optional filter to match one or more Market Locations by their official ID.
-  repeated MarketLocationIdValue market_location_id_filters = 1;
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocationIdValue
+      market_location_id_filters = 1;
 
   // Optional filter for which activation states to include.
   //
@@ -1405,7 +1161,8 @@ message CreateMarketLocationRequest {
   // !!! important
   //     The combination of `market_area` and `market_location_id` must be
   //     unique within the authorized enterprise scope.
-  MarketLocationSelector market_location_selector = 1;
+  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_location_selector = 1;
 
   // Metadata describing the Market Location.
   //
@@ -1509,7 +1266,8 @@ message UpdateMarketLocationRequest {
   }
 
   // Identifies the Market Location being updated.
-  MarketLocationSelector market_location_selector = 1;
+  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_location_selector = 1;
 
   // The revision the caller expects to be the latest revision at the time this
   // update is applied.
@@ -1608,7 +1366,8 @@ message UpdateMarketLocationResponse {
 //
 message DeactivateMarketLocationRequest {
   // List of Market Locations to deactivate.
-  repeated MarketLocationSelector market_locations = 1;
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_locations = 1;
 }
 
 // Response for batch deactivation of Market Locations.
@@ -1632,7 +1391,8 @@ message DeactivateMarketLocationResponse {
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
-  repeated MarketLocationSelector market_locations = 1;
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_locations = 1;
 }
 
 // Response for batch activation of Market Locations.
@@ -1804,7 +1564,8 @@ message ListMarketLocationsResponse {
 //
 message UpsertMarketLocationSamplesStreamRequest {
   // Identifies the target Market Location.
-  MarketLocationSelector market_location = 1;
+  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_location = 1;
 
   // Energy-flow direction (IMPORT or EXPORT).
   //
@@ -1947,7 +1708,8 @@ message UpsertMarketLocationSamplesStreamResponse {
 //
 message ReceiveMarketLocationSamplesStreamRequest {
   // A list of Market Location`s to receive samples for.
-  repeated MarketLocationSelector market_locations = 1;
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+      market_locations = 1;
 
   // Energy-flow directions requested (e.g., IMPORT and/or EXPORT).
   //
