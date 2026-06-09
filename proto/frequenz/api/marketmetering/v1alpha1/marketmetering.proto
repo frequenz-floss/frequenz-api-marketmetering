@@ -635,7 +635,7 @@ message MarketLocationRef {
   uint64 enterprise_id = 1;
 
   // Market Location identity within the enterprise.
-  frequenz.api.common.v1alpha8.grid.MarketLocationSelector selector = 2;
+  frequenz.api.common.v1alpha8.grid.MarketLocation market_location = 2;
 }
 
 // Represents a logical Market Location used in regulated electricity markets.
@@ -660,7 +660,7 @@ message MarketLocationRef {
 //     }
 //     ```
 //
-message MarketLocation {
+message MarketLocationMetadata {
   // Optional human-readable name for organizational use.
   string display_name = 1;
 
@@ -719,7 +719,7 @@ message MarketLocation {
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
 //         }
 //       },
-//       "market_location": {
+//       "market_location_metadata": {
 //         "display_name": "Main Office – Consumption",
 //         "supported_directions": ["ENERGY_FLOW_DIRECTION_IMPORT"],
 //         "time_resolution": "TIME_RESOLUTION_15_MIN"
@@ -737,7 +737,7 @@ message MarketLocationDetail {
 
   // The logical Market Location (display name, supported
   // directions, time resolution, and user-defined metadata).
-  MarketLocation market_location = 2;
+  MarketLocationMetadata market_location = 2;
 
   // Monotonically increasing revision counter.
   //
@@ -799,7 +799,7 @@ message MarketLocationDetail {
 message MarketLocationsFilter {
   // Optional filter to match one or more Market Locations by their official ID.
   repeated frequenz.api.common.v1alpha8.grid.MarketLocationIdValue
-      market_location_id_filters = 1;
+      market_location_id_values = 1;
 
   // Optional filter for which activation states to include.
   //
@@ -1131,7 +1131,7 @@ message MarketLocationSamplesStreamFilter {
 // !!! example "Example Request"
 //     ```json
 //     {
-//       "market_location_selector": {
+//       "market_location": {
 //         "market_area": "MARKET_AREA_EU_DE",
 //         "market_location_id": {
 //           "id": {
@@ -1140,7 +1140,7 @@ message MarketLocationSamplesStreamFilter {
 //           "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
 //         }
 //       },
-//       "market_location": {
+//       "market_location_metadata": {
 //         "display_name": "Main Office – Consumption",
 //         "supported_directions": [
 //           "ENERGY_FLOW_DIRECTION_IMPORT"
@@ -1161,15 +1161,14 @@ message CreateMarketLocationRequest {
   // !!! important
   //     The combination of `market_area` and `market_location_id` must be
   //     unique within the authorized enterprise scope.
-  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
-      market_location_selector = 1;
+  frequenz.api.common.v1alpha8.grid.MarketLocation market_location = 1;
 
   // Metadata describing the Market Location.
   //
   // All fields except `payload` must be populated. The service validates the
   // provided configuration and assigns lifecycle metadata such as revisions
   // and timestamps during creation.
-  MarketLocation market_location = 3;
+  MarketLocationMetadata market_location_metadata = 3;
 }
 
 // Response for creating a new Market Location.
@@ -1183,10 +1182,14 @@ message CreateMarketLocationRequest {
 //       "market_location_detail": {
 //         "market_location_ref": {
 //           "enterprise_id": 42,
-//           "market_area": "MARKET_AREA_EU_DE",
-//           "market_location_id": {
-//             "value": "DE01234567890",
-//             "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//           "market_location": {
+//             "market_area": "MARKET_AREA_EU_DE",
+//             "market_location_id": {
+//               "id": {
+//                 "value": "01234567890"
+//               },
+//               "type": "MARKET_LOCATION_ID_TYPE_MALO_ID"
+//             }
 //           }
 //         },
 //         "market_location": {
@@ -1266,8 +1269,8 @@ message UpdateMarketLocationRequest {
   }
 
   // Identifies the Market Location being updated.
-  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
-      market_location_selector = 1;
+  frequenz.api.common.v1alpha8.grid.MarketLocation
+      market_location = 1;
 
   // The revision the caller expects to be the latest revision at the time this
   // update is applied.
@@ -1366,7 +1369,7 @@ message UpdateMarketLocationResponse {
 //
 message DeactivateMarketLocationRequest {
   // List of Market Locations to deactivate.
-  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocation
       market_locations = 1;
 }
 
@@ -1391,7 +1394,7 @@ message DeactivateMarketLocationResponse {
 //
 message ActivateMarketLocationRequest {
   // List of Market Locations to activate.
-  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocation
       market_locations = 1;
 }
 
@@ -1564,7 +1567,7 @@ message ListMarketLocationsResponse {
 //
 message UpsertMarketLocationSamplesStreamRequest {
   // Identifies the target Market Location.
-  frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+  frequenz.api.common.v1alpha8.grid.MarketLocation
       market_location = 1;
 
   // Energy-flow direction (IMPORT or EXPORT).
@@ -1708,7 +1711,7 @@ message UpsertMarketLocationSamplesStreamResponse {
 //
 message ReceiveMarketLocationSamplesStreamRequest {
   // A list of Market Location`s to receive samples for.
-  repeated frequenz.api.common.v1alpha8.grid.MarketLocationSelector
+  repeated frequenz.api.common.v1alpha8.grid.MarketLocation
       market_locations = 1;
 
   // Energy-flow directions requested (e.g., IMPORT and/or EXPORT).
