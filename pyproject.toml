@@ -184,4 +184,5 @@ ignore_missing_imports = true
 "*" = ["*.pyi"]
 
 [tool.setuptools_scm]
+parentdir_prefix_version = "frequenz_api_marketmetering-"
 version_scheme = "post-release"
