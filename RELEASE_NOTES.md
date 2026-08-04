@@ -2,7 +2,9 @@
 
 ## Summary
 
-This release aligns the Market Metering API with the updated common grid model.
+This is the initial release of the Market Metering API. It defines market
+location lifecycle operations and revisioned metering-sample streams using the
+common grid model.
 
 ## Upgrading
 
@@ -17,4 +19,7 @@ This release aligns the Market Metering API with the updated common grid model.
 
 ## New Features
 
-## Bug Fixes
+- Added RPCs to create, update, activate, deactivate, and list market
+  locations.
+- Added a bidirectional stream for revisioned metering-sample upserts.
+- Added a server stream for receiving revisioned or resampled metering data.
