@@ -24,7 +24,6 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: brettcannon/check-for-changed-files@d85c64d17b3c1d0ac57c9cc46ea39399b0d6fa71 # v1.2.2
         with:
-          token: ${{ secrets.github_token }}
           file-pattern: "RELEASE_NOTES.md"
           prereq-pattern: "{proto,py}/**"
           skip-label: "cmd:skip-release-notes"
